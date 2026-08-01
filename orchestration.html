@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Live orchestration status for Story of Intelligence Academy." />
+    <title>Academy Orchestration Status</title>
+    <link rel="stylesheet" href="assets/orchestration.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <p class="eyebrow">Story of Intelligence Academy</p>
+        <h1>Feature delivery status</h1>
+        <p id="feature" class="lead">Loading status…</p>
+      </header>
+      <section class="now" aria-live="polite">
+        <p class="label">Working now</p>
+        <h2 id="task-title">—</h2>
+        <p id="task-status">—</p>
+      </section>
+      <section aria-labelledby="sequence-title">
+        <div class="section-heading"><h2 id="sequence-title">Delivery sequence</h2><span id="updated" class="updated">—</span></div>
+        <ol id="sequence" class="sequence"></ol>
+      </section>
+      <section class="automation" aria-labelledby="automation-title">
+        <h2 id="automation-title">Autonomous loop</h2>
+        <p id="automation-status">—</p>
+        <p id="last-action" class="muted">—</p>
+      </section>
+      <footer id="gate">—</footer>
+    </main>
+    <script type="module" src="assets/orchestration.js"></script>
+  </body>
+</html>
