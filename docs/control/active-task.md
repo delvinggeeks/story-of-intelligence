@@ -1,13 +1,14 @@
-# Active Task: CR-001
+# Active Task: IR-002
 
 **Status:** Approved for Copilot execution  
-**Type:** Read-only implementation review  
-**Branch:** `copilot/cr-001-numbers-renderer`  
+**Type:** Narrow implementation correction  
+**Branch:** `copilot/ir-002-numbers-assessment`  
+**Report:** `docs/control/copilot-report-IR-002.md`  
 **Model preference:** `claude-sonnet-4.6` (only if available to the signed-in Copilot plan)
 
 ## Objective
 
-Review the current Numbers static renderer against the Constitution and LOS v1.0. Do not modify product files.
+Complete the existing Numbers renderer's learner-facing assessment path and make its hint/error presentation beginner-safe. Do not change EDM v1.0, LOS v1.0, or the Numbers JSON shape.
 
 ## Allowed reads
 
@@ -24,19 +25,24 @@ Review the current Numbers static renderer against the Constitution and LOS v1.0
 
 ## Allowed writes
 
-- `docs/control/copilot-report.md` only
+- `index.html`
+- `assets/app.js`
+- `assets/styles.css`
+- `docs/control/copilot-report-IR-002.md`
 
 ## Required checks
 
 ```text
 node --check assets/app.js
 node scripts/validate-learning-object.mjs schemas/learning-object.schema.v1.json content/learning-objects/numbers.v1.json
-git diff main...HEAD -- index.html assets
+git diff main...HEAD -- index.html assets docs/control/copilot-report-IR-002.md
 ```
 
 ## Acceptance criteria
 
-- Report the exact checks run and their result.
-- Identify only concrete defects or risks, with file and line references where possible.
-- Confirm whether the renderer stays within the Numbers vertical slice and has ADR impact `None`.
-- Make no product changes, commits, pushes, merges, deployments, or external requests.
+- Present `measurement.prePrompt` before the learning steps and `measurement.postPrompt` with `successCriteria` after the final step.
+- Keep progress, reflections, and assessment answers only in browser local storage.
+- Do not expose `reasoning.tutorGuidance` until the learner explicitly requests a hint.
+- Replace the raw fetch-failure message with a clear beginner-facing recovery message.
+- Report the exact checks run, files changed, risks/assumptions, and ADR impact `None`.
+- Make no commits, pushes, merges, deployments, external requests, or changes outside the allowed paths.
