@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="The first Story of Intelligence Academy learning object: Numbers." />
+    <title>Story of Intelligence Academy — Numbers</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <p class="eyebrow">Story of Intelligence Academy · Foundation Block 001</p>
+        <h1 id="title">Numbers</h1>
+        <p id="scope" class="lead">Loading the learning object…</p>
+        <dl class="metadata">
+          <div><dt>Time</dt><dd id="duration">—</dd></div>
+          <div><dt>Starting point</dt><dd id="entry">—</dd></div>
+        </dl>
+      </header>
+
+      <section class="progress-region" aria-label="Lesson progress">
+        <div class="progress-label"><span id="progress-text">Step 1 of 5</span><button id="reset" type="button">Start again</button></div>
+        <div class="progress-track" aria-hidden="true"><div id="progress-bar" class="progress-bar"></div></div>
+      </section>
+
+      <section class="lesson-card" aria-live="polite">
+        <p id="step-kind" class="step-kind">Observe</p>
+        <h2 id="step-heading">What do you notice?</h2>
+        <p id="step-prompt" class="step-prompt"></p>
+        <label for="reflection">Your thinking</label>
+        <textarea id="reflection" rows="6" placeholder="Write, sketch with words, or leave this blank and think aloud."></textarea>
+        <div class="controls">
+          <button id="previous" type="button">Back</button>
+          <button id="next" type="button">Continue</button>
+        </div>
+      </section>
+
+      <section class="support" aria-labelledby="support-heading">
+        <h2 id="support-heading">A gentle hint</h2>
+        <p id="guidance"></p>
+      </section>
+    </main>
+    <script type="module" src="assets/app.js"></script>
+  </body>
+</html>

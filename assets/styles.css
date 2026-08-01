@@ -1,0 +1,31 @@
+:root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #14251f; background: #f6f4ec; }
+* { box-sizing: border-box; }
+body { margin: 0; line-height: 1.6; }
+button, textarea { font: inherit; }
+.shell { width: min(760px, calc(100% - 2rem)); margin: 0 auto; padding: 4rem 0 5rem; }
+.hero { border-bottom: 1px solid #cbd4cd; padding-bottom: 2rem; }
+.eyebrow, .step-kind { color: #30715b; font-size: .8rem; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
+h1 { font-family: Georgia, serif; font-size: clamp(3rem, 10vw, 5.75rem); line-height: .95; margin: .4rem 0 1rem; }
+h2 { font-family: Georgia, serif; font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1; }
+.lead { font-size: 1.2rem; max-width: 62ch; }
+.metadata { display: grid; grid-template-columns: 1fr 2fr; gap: .6rem 1.5rem; margin: 2rem 0 0; font-size: .92rem; }
+.metadata div { display: contents; }
+.metadata dt { color: #50635a; font-weight: 700; }
+.metadata dd { margin: 0; }
+.progress-region { margin: 2.5rem 0 1.5rem; }
+.progress-label { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; }
+.progress-label button { border: 0; background: transparent; color: #30715b; text-decoration: underline; cursor: pointer; }
+.progress-track { overflow: hidden; height: .45rem; margin-top: .6rem; background: #dfe5df; border-radius: 4rem; }
+.progress-bar { height: 100%; background: #30715b; transition: width .2s ease; }
+.lesson-card, .support { background: #fffdf7; border: 1px solid #d8ded7; border-radius: 1rem; padding: clamp(1.5rem, 5vw, 3rem); box-shadow: 0 .5rem 2rem #1735280d; }
+.step-kind { margin: 0; }
+.step-prompt { font-size: 1.15rem; min-height: 5rem; }
+label { display: block; margin: 2rem 0 .5rem; font-weight: 700; }
+textarea { width: 100%; resize: vertical; padding: .8rem; border: 1px solid #a9b9ae; border-radius: .5rem; background: #fff; color: inherit; }
+.controls { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; }
+.controls button { border: 1px solid #30715b; border-radius: .4rem; padding: .65rem 1rem; background: transparent; color: #1e5342; cursor: pointer; }
+.controls #next { background: #1e5342; color: #fff; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+.support { margin-top: 1.5rem; background: #e5f0e8; }
+.support h2 { margin-top: 0; font-size: 1.45rem; }
+@media (max-width: 480px) { .shell { padding-top: 2rem; } .metadata { grid-template-columns: 1fr; gap: .1rem; } .metadata dd { margin-bottom: .8rem; } }
