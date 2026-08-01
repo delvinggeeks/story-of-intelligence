@@ -1,16 +1,19 @@
 const contentUrl = "./content/learning-objects/numbers.v1.json";
+const graphUrl = "./content/knowledge-graph.v1.json";
 const storageKey = "story-of-intelligence:numbers:v1";
 const labels = { observe: "Observe", wonder: "Wonder", predict: "Predict", explain: "Explain", apply: "Apply" };
 const headings = { observe: "What do you notice?", wonder: "What do you wonder?", predict: "Make a prediction", explain: "Build the idea", apply: "Try it yourself" };
-const elements = Object.fromEntries(["title", "scope", "duration", "entry", "progress-text", "progress-bar", "step-kind", "step-heading", "step-prompt", "reflection", "previous", "next", "reset", "guidance", "hint-toggle", "success-criteria"].map((id) => [id, document.querySelector(`#${id}`)]));
+const elements = Object.fromEntries(["title", "scope", "duration", "entry", "progress-text", "progress-bar", "step-kind", "step-heading", "step-prompt", "reflection", "previous", "next", "reset", "guidance", "hint-toggle", "success-criteria", "tutor", "tutor-response"].map((id) => [id, document.querySelector(`#${id}`)]));
 
 function stateFromStorage() { try { return JSON.parse(localStorage.getItem(storageKey)) ?? { position: 0, reflections: {} }; } catch { return { position: 0, reflections: {} }; } }
 function save(state) { localStorage.setItem(storageKey, JSON.stringify(state)); }
 
 async function start() {
-  const response = await fetch(contentUrl);
-  if (!response.ok) throw new Error();
+  const [response, graphResponse] = await Promise.all([fetch(contentUrl), fetch(graphUrl)]);
+  if (!response.ok || !graphResponse.ok) throw new Error();
   const lesson = await response.json();
+  const graph = await graphResponse.json();
+  if (!graph.nodes.some((node) => node.id === lesson.knowledge.conceptId)) throw new Error();
   const state = stateFromStorage();
   const last = lesson.learning.steps.length + 1;
   if (state.position === undefined) state.position = (state.step ?? 0) + 1;
@@ -42,6 +45,7 @@ async function start() {
   elements.next.addEventListener("click", () => { if (state.position < last) { state.position++; render(); } else { elements.next.textContent = "Completed"; elements.next.disabled = true; } });
   elements.reset.addEventListener("click", () => { state.position = 0; state.reflections = {}; elements.guidance.hidden = true; elements["hint-toggle"].textContent = "Show a hint"; render(); });
   elements["hint-toggle"].addEventListener("click", () => { elements.guidance.hidden = !elements.guidance.hidden; elements["hint-toggle"].textContent = elements.guidance.hidden ? "Show a hint" : "Hide hint"; });
+  elements.tutor.addEventListener("click", () => { const answer = elements.reflection.value.trim(); elements["tutor-response"].textContent = answer ? "Good start. Now name the quantity, its unit, and the decision that the comparison supports." : "Start with your own observation. What quantity is represented, and what unit makes it comparable?"; elements["tutor-response"].hidden = false; });
   render();
 }
 start().catch(() => { elements.scope.textContent = "We could not load this lesson just now. Please refresh the page and try again."; elements.next.disabled = true; });

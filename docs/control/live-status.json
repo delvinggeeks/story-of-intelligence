@@ -1,18 +1,19 @@
 {
   "updatedAt": "2026-08-02T01:40:10+05:30",
   "feature": "Numbers vertical slice",
-  "state": "implementation",
+  "state": "architecture-alignment correction",
   "currentTask": {
-    "id": "IR-003",
-    "title": "Adult technical learner tone for Numbers",
-    "status": "active — owner demo feedback incorporated"
+    "id": "VS-004",
+    "title": "Executable Numbers vertical-slice runtime",
+    "status": "active — rebuilding against frozen EDM v1.0 requirements"
   },
   "sequence": [
     { "name": "Architecture baseline", "status": "complete" },
     { "name": "LOS and Numbers object", "status": "complete" },
     { "name": "Static renderer", "status": "complete" },
     { "name": "Assessment and beginner-safe UX", "status": "complete" },
-    { "name": "Adult technical learner tone", "status": "active" },
+    { "name": "Adult technical learner tone", "status": "complete" },
+    { "name": "Knowledge graph and reasoning runtime", "status": "active" },
     { "name": "Demo validation", "status": "pending" }
   ],
   "automation": {
