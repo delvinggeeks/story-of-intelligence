@@ -1,4 +1,18 @@
 const statusUrl = "./docs/control/live-status.json";
+const fallbackStatus = {
+  updatedAt: "2026-08-02T00:00:00+05:30",
+  feature: "Numbers vertical slice",
+  currentTask: { id: "IR-002", title: "Numbers assessment and beginner-safe UX", status: "approved — awaiting execution" },
+  sequence: [
+    { name: "Architecture baseline", status: "complete" },
+    { name: "LOS and Numbers object", status: "complete" },
+    { name: "Static renderer", status: "complete" },
+    { name: "Assessment and beginner-safe UX", status: "active" },
+    { name: "Demo validation", status: "pending" }
+  ],
+  automation: { status: "active", cadence: "every 15 minutes", lastAction: "IR-002 has been issued; no Copilot report is present yet." },
+  gate: "Owner review only when the complete demoable Numbers feature is validated."
+};
 const elements = {
   feature: document.querySelector("#feature"),
   taskTitle: document.querySelector("#task-title"),
@@ -32,5 +46,6 @@ async function refresh() {
   render(await response.json());
 }
 
-refresh().catch((error) => { elements.feature.textContent = error.message; });
+render(fallbackStatus);
+refresh().catch(() => {});
 setInterval(() => refresh().catch(() => {}), 15000);
