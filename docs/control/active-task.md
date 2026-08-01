@@ -1,6 +1,6 @@
 # Active Task: IR-002
 
-**Status:** Approved for Copilot execution  
+**Status:** Complete — validated for owner demo  
 **Type:** Narrow implementation correction  
 **Branch:** `copilot/ir-002-numbers-assessment`  
 **Report:** `docs/control/copilot-report-IR-002.md`  

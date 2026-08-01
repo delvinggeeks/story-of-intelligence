@@ -24,3 +24,24 @@ The review correctly identifies that learner-facing pre/post assessment is missi
 **Status:** Accepted — ready for browser-level demo validation
 
 IR-002 meets its scoped acceptance criteria and passes syntax and LOS validation. The next remaining validation is a browser-level walkthrough of the full Numbers experience; no further implementation task is issued until that evidence is recorded.
+
+---
+
+**Feature:** Numbers vertical slice  
+**Status:** Demoable — ready for owner validation
+
+## Automated validation evidence
+
+- `node --check assets/app.js` passed.
+- LOS validation for `numbers.v1.json` passed.
+- The local static server returned HTTP 200 for `index.html` and the page contained the Academy title.
+- Source inspection confirms use of the pre-assessment, post-assessment, success criteria, local storage, explicit hint control, and beginner-safe load-failure path.
+- Git working state was clean before the final status-record updates.
+
+## Browser interaction limitation
+
+Automated browser interaction is unavailable in this task because its browser-control runtime lacks the required client module. No visual interaction test is claimed.
+
+## Decision
+
+The Numbers slice is ready for the sole owner demo gate. No further implementation task is issued. ADR impact remains `None`.
