@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-08-02T01:40:00+05:30",
+  "updatedAt": "2026-08-02T01:40:10+05:30",
   "feature": "Numbers vertical slice",
-  "state": "implementation",
+  "state": "awaiting owner demo validation",
   "currentTask": {
     "id": "IR-002",
     "title": "Numbers assessment and beginner-safe UX",
-    "status": "complete — ready for owner demo validation"
+    "status": "awaiting owner demo validation"
   },
   "sequence": [
     { "name": "Architecture baseline", "status": "complete" },
@@ -15,9 +15,9 @@
     { "name": "Demo validation", "status": "complete" }
   ],
   "automation": {
-    "status": "active",
+    "status": "waiting",
     "cadence": "every 15 minutes",
-    "lastAction": "All available automated validation passed; browser interaction was unavailable and is recorded in architect review."
+    "lastAction": "All available automated validation passed. Browser-interaction automation is unavailable; the owner demo gate remains."
   },
   "gate": "Owner demo validation is now required for the complete Numbers feature."
 }
