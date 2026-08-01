@@ -28,6 +28,7 @@
         <p id="step-kind" class="step-kind">Observe</p>
         <h2 id="step-heading">What do you notice?</h2>
         <p id="step-prompt" class="step-prompt"></p>
+        <ul id="success-criteria" hidden></ul>
         <label for="reflection">Your thinking</label>
         <textarea id="reflection" rows="6" placeholder="Write, sketch with words, or leave this blank and think aloud."></textarea>
         <div class="controls">
@@ -38,7 +39,8 @@
 
       <section class="support" aria-labelledby="support-heading">
         <h2 id="support-heading">A gentle hint</h2>
-        <p id="guidance"></p>
+        <button id="hint-toggle" type="button">Show a hint</button>
+        <p id="guidance" hidden></p>
       </section>
     </main>
     <script type="module" src="assets/app.js"></script>

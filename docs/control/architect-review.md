@@ -17,3 +17,10 @@ CR-001 is accepted as a compliant review with ADR impact `None`. The renderer re
 The review correctly identifies that learner-facing pre/post assessment is missing. This prevents closing the Learning Object increment because measurement exists only in data, not in the learner experience. Hint visibility and fetch-failure language also need beginner-safe behavior.
 
 **Next approved task:** IR-002, defined in `docs/control/active-task.md`. It is a narrow renderer correction; no ADR is required.
+
+---
+
+**Task:** IR-002  
+**Status:** Accepted — ready for browser-level demo validation
+
+IR-002 meets its scoped acceptance criteria and passes syntax and LOS validation. The next remaining validation is a browser-level walkthrough of the full Numbers experience; no further implementation task is issued until that evidence is recorded.

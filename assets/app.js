@@ -1,53 +1,20 @@
 const contentUrl = "./content/learning-objects/numbers.v1.json";
 const storageKey = "story-of-intelligence:numbers:v1";
-const labels = {
-  observe: "Observe",
-  wonder: "Wonder",
-  predict: "Predict",
-  explain: "Explain",
-  apply: "Apply"
-};
+const labels = { observe: "Observe", wonder: "Wonder", predict: "Predict", explain: "Explain", apply: "Apply" };
+const headings = { observe: "What do you notice?", wonder: "What do you wonder?", predict: "Make a prediction", explain: "Build the idea", apply: "Try it yourself" };
+const elements = Object.fromEntries(["title", "scope", "duration", "entry", "progress-text", "progress-bar", "step-kind", "step-heading", "step-prompt", "reflection", "previous", "next", "reset", "guidance", "hint-toggle", "success-criteria"].map((id) => [id, document.querySelector(`#${id}`)]));
 
-const elements = {
-  title: document.querySelector("#title"),
-  scope: document.querySelector("#scope"),
-  duration: document.querySelector("#duration"),
-  entry: document.querySelector("#entry"),
-  progressText: document.querySelector("#progress-text"),
-  progressBar: document.querySelector("#progress-bar"),
-  kind: document.querySelector("#step-kind"),
-  heading: document.querySelector("#step-heading"),
-  prompt: document.querySelector("#step-prompt"),
-  reflection: document.querySelector("#reflection"),
-  previous: document.querySelector("#previous"),
-  next: document.querySelector("#next"),
-  reset: document.querySelector("#reset"),
-  guidance: document.querySelector("#guidance")
-};
-
-function readState() {
-  try {
-    return JSON.parse(localStorage.getItem(storageKey)) ?? { step: 0, reflections: {} };
-  } catch {
-    return { step: 0, reflections: {} };
-  }
-}
-
-function saveState(state) {
-  localStorage.setItem(storageKey, JSON.stringify(state));
-}
-
-function headingFor(kind) {
-  return { observe: "What do you notice?", wonder: "What do you wonder?", predict: "Make a prediction", explain: "Build the idea", apply: "Try it yourself" }[kind];
-}
+function stateFromStorage() { try { return JSON.parse(localStorage.getItem(storageKey)) ?? { position: 0, reflections: {} }; } catch { return { position: 0, reflections: {} }; } }
+function save(state) { localStorage.setItem(storageKey, JSON.stringify(state)); }
 
 async function start() {
   const response = await fetch(contentUrl);
-  if (!response.ok) throw new Error("The Numbers learning object could not be loaded.");
+  if (!response.ok) throw new Error();
   const lesson = await response.json();
-  const state = readState();
-  state.step = Math.min(Math.max(state.step, 0), lesson.learning.steps.length - 1);
-
+  const state = stateFromStorage();
+  const last = lesson.learning.steps.length + 1;
+  if (state.position === undefined) state.position = (state.step ?? 0) + 1;
+  state.position = Math.min(Math.max(state.position, 0), last);
   elements.title.textContent = lesson.title;
   elements.scope.textContent = lesson.scope;
   elements.duration.textContent = `${lesson.learning.estimatedMinutes} minutes`;
@@ -55,37 +22,26 @@ async function start() {
   elements.guidance.textContent = lesson.reasoning.tutorGuidance;
 
   function render() {
-    const step = lesson.learning.steps[state.step];
-    elements.kind.textContent = labels[step.kind];
-    elements.heading.textContent = headingFor(step.kind);
-    elements.prompt.textContent = step.prompt;
-    elements.reflection.value = state.reflections[state.step] ?? "";
-    elements.progressText.textContent = `Step ${state.step + 1} of ${lesson.learning.steps.length}`;
-    elements.progressBar.style.width = `${((state.step + 1) / lesson.learning.steps.length) * 100}%`;
-    elements.previous.disabled = state.step === 0;
-    elements.next.textContent = state.step === lesson.learning.steps.length - 1 ? "Finish" : "Continue";
-    saveState(state);
-  }
-
-  elements.reflection.addEventListener("input", () => {
-    state.reflections[state.step] = elements.reflection.value;
-    saveState(state);
-  });
-  elements.previous.addEventListener("click", () => { state.step -= 1; render(); });
-  elements.next.addEventListener("click", () => {
-    if (state.step < lesson.learning.steps.length - 1) { state.step += 1; render(); }
-    else { elements.next.textContent = "Completed"; elements.next.disabled = true; }
-  });
-  elements.reset.addEventListener("click", () => {
-    state.step = 0;
-    state.reflections = {};
+    const pre = state.position === 0, post = state.position === last;
+    const step = pre || post ? null : lesson.learning.steps[state.position - 1];
+    elements["step-kind"].textContent = pre ? "Before" : post ? "After" : labels[step.kind];
+    elements["step-heading"].textContent = pre ? "Before we begin" : post ? "Show what you understand" : headings[step.kind];
+    elements["step-prompt"].textContent = pre ? lesson.measurement.prePrompt : post ? lesson.measurement.postPrompt : step.prompt;
+    elements["success-criteria"].hidden = !post;
+    elements["success-criteria"].replaceChildren(...(post ? lesson.measurement.successCriteria : []).map((text) => Object.assign(document.createElement("li"), { textContent: text })));
+    elements.reflection.value = state.reflections[state.position] ?? "";
+    elements["progress-text"].textContent = pre ? "Before the lesson" : post ? "After the lesson" : `Step ${state.position} of ${lesson.learning.steps.length}`;
+    elements["progress-bar"].style.width = `${(state.position / last) * 100}%`;
+    elements.previous.disabled = pre;
     elements.next.disabled = false;
-    render();
-  });
+    elements.next.textContent = post ? "Finish" : "Continue";
+    save(state);
+  }
+  elements.reflection.addEventListener("input", () => { state.reflections[state.position] = elements.reflection.value; save(state); });
+  elements.previous.addEventListener("click", () => { state.position--; render(); });
+  elements.next.addEventListener("click", () => { if (state.position < last) { state.position++; render(); } else { elements.next.textContent = "Completed"; elements.next.disabled = true; } });
+  elements.reset.addEventListener("click", () => { state.position = 0; state.reflections = {}; elements.guidance.hidden = true; elements["hint-toggle"].textContent = "Show a hint"; render(); });
+  elements["hint-toggle"].addEventListener("click", () => { elements.guidance.hidden = !elements.guidance.hidden; elements["hint-toggle"].textContent = elements.guidance.hidden ? "Show a hint" : "Hide hint"; });
   render();
 }
-
-start().catch((error) => {
-  elements.scope.textContent = error.message;
-  elements.next.disabled = true;
-});
+start().catch(() => { elements.scope.textContent = "We could not load this lesson just now. Please refresh the page and try again."; elements.next.disabled = true; });

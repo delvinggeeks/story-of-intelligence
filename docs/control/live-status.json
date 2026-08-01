@@ -1,23 +1,23 @@
 {
-  "updatedAt": "2026-08-02T00:00:00+05:30",
+  "updatedAt": "2026-08-02T12:01:00+05:30",
   "feature": "Numbers vertical slice",
   "state": "implementation",
   "currentTask": {
     "id": "IR-002",
     "title": "Numbers assessment and beginner-safe UX",
-    "status": "approved — awaiting execution"
+    "status": "complete — awaiting browser-level demo validation"
   },
   "sequence": [
     { "name": "Architecture baseline", "status": "complete" },
     { "name": "LOS and Numbers object", "status": "complete" },
     { "name": "Static renderer", "status": "complete" },
-    { "name": "Assessment and beginner-safe UX", "status": "active" },
-    { "name": "Demo validation", "status": "pending" }
+    { "name": "Assessment and beginner-safe UX", "status": "complete" },
+    { "name": "Demo validation", "status": "active" }
   ],
   "automation": {
     "status": "active",
     "cadence": "every 15 minutes",
-    "lastAction": "IR-002 has been issued; no Copilot report is present yet."
+    "lastAction": "IR-002 implemented directly and passed syntax plus LOS validation."
   },
   "gate": "Owner review only when the complete demoable Numbers feature is validated."
 }
