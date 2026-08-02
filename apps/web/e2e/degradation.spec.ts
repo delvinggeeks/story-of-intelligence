@@ -56,3 +56,70 @@ test("an unknown concept renders the not-found page", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Concept not in the graph" })).toBeVisible();
   await expect(page.getByRole("link", { name: /back to the learning path/i })).toBeVisible();
 });
+
+test("the learner is told the lesson is preparing before progress arrives", async ({ page }) => {
+  let release = () => {};
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  // Only the bootstrap call is held, so the wait is real rather than a fixed sleep.
+  await page.route("**/api/v1/learners", async (route) => {
+    await held;
+    await route.continue();
+  });
+
+  await page.goto("/concepts/numbers");
+  await expect(page.getByRole("main").getByRole("status")).toContainText(
+    /preparing your lesson/i,
+  );
+
+  release();
+  await expect(page.getByTestId("progress-panel")).toBeVisible();
+});
+
+test("a write that fails and then succeeds clears the warning and saves", async ({ page }) => {
+  await page.goto("/concepts/numbers");
+  await expect(page.getByTestId("progress-panel")).toBeVisible();
+
+  // A transient outage: the first write fails, every later one is let through.
+  let firstWrite = true;
+  await page.route("**/sessions/**/events", async (route) => {
+    if (firstWrite) {
+      firstWrite = false;
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "The database is unavailable." }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  const alert = page.getByRole("main").getByRole("alert");
+  await page.getByLabel(/first answer/i).fill("Numbers are just digits.");
+  await page.getByRole("button", { name: /save my first answer/i }).click();
+  await expect(alert).toContainText(/database is unavailable/i);
+
+  await page.getByRole("button", { name: /save my first answer/i }).click();
+  await expect(alert).toHaveCount(0);
+  await expect(page.getByTestId("progress-panel").getByText("Saved").first()).toBeVisible();
+
+  // The recovery is server-side, not just a cleared banner.
+  await page.reload();
+  await expect(page.getByTestId("progress-panel").getByText("Saved").first()).toBeVisible();
+});
+
+test("a tutor outage does not take the lesson down with it", async ({ page }) => {
+  await page.route("**/api/v1/tutor", (route) => route.abort("connectionrefused"));
+
+  await page.goto("/concepts/numbers");
+  const panel = page.getByTestId("tutor-panel");
+  await panel.getByTestId("tutor-hint").click();
+
+  await expect(panel.getByTestId("tutor-failure")).toContainText(/cannot reach the Academy/i);
+  // The learner loop is a different route and must be unaffected.
+  await page.getByLabel(/first answer/i).fill("Numbers are just digits.");
+  await page.getByRole("button", { name: /save my first answer/i }).click();
+  await expect(page.getByTestId("progress-panel").getByText("Saved").first()).toBeVisible();
+});
