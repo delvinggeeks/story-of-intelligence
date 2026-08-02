@@ -18,6 +18,24 @@ jobs:
     env:
       # Hardlinking is unreliable on synced/overlay filesystems; copying is portable.
       UV_LINK_MODE: copy
+      # Runner-local throwaway service containers. No hosted database, no real credentials.
+      ACADEMY_DATABASE_URL: postgresql+asyncpg://academy:academy_local_dev@127.0.0.1:5432/academy
+      # Exercise the disabled-cache path in CI; degradation must never fail the suite.
+      ACADEMY_REDIS_URL: ""
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: academy
+          POSTGRES_PASSWORD: academy_local_dev
+          POSTGRES_DB: academy
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U academy -d academy"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,6 +59,17 @@ jobs:
 
       - name: Type check
         run: uv run --directory services/api mypy
+
+      - name: Apply migrations
+        run: uv run --directory services/api alembic upgrade head
+
+      - name: Check migrations match the models
+        run: uv run --directory services/api alembic check
+
+      - name: Verify migrations are reversible
+        run: |
+          uv run --directory services/api alembic downgrade base
+          uv run --directory services/api alembic upgrade head
 
       - name: Test
         run: uv run --directory services/api pytest
