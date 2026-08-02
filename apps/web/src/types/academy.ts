@@ -209,3 +209,58 @@ export interface ConceptProgress {
   completionRecorded: boolean;
   mastery: MasteryAssessment | null;
 }
+
+/** Mirrors `academy_api.domain.tutoring`. Hand-mirrored: there is no generator. */
+export const TUTOR_TASK = {
+  explanation: "explanation",
+  hint: "hint",
+  socraticQuestion: "socratic-question",
+  feedback: "feedback",
+  misconceptionCheck: "misconception-check",
+} as const;
+
+export type TutorTask = (typeof TUTOR_TASK)[keyof typeof TUTOR_TASK];
+
+export interface TutorRequest {
+  task: TutorTask;
+  conceptId: string;
+  stepIndex?: number | null;
+  learnerId?: string | null;
+  question?: string | null;
+  providerId?: string | null;
+}
+
+export interface Citation {
+  conceptId: string;
+  conceptVersion: string;
+  field: string;
+}
+
+export interface ProviderInfo {
+  id: string;
+  name: string;
+  version: string;
+  determinism: "deterministic" | "stochastic";
+  external: boolean;
+  model: string | null;
+}
+
+export interface TutorTrace {
+  providerId: string;
+  conceptVersion: string;
+  rulesFired: string[];
+  evidenceUsed: boolean;
+}
+
+export interface TutorResponse {
+  task: TutorTask;
+  conceptId: string;
+  supported: boolean;
+  headline: string;
+  body: string[];
+  followUp: string | null;
+  citations: Citation[];
+  provider: ProviderInfo;
+  trace: TutorTrace;
+  disclaimer: string;
+}

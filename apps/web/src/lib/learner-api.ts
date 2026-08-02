@@ -11,6 +11,8 @@ import type {
   EvidenceEventRecord,
   Learner,
   LearningSession,
+  TutorRequest,
+  TutorResponse,
 } from "@/types/academy";
 
 const BASE_URL = process.env.NEXT_PUBLIC_ACADEMY_API_URL ?? "http://127.0.0.1:8000";
@@ -80,4 +82,17 @@ export function appendEvidence(
 
 export function getProgress(learnerId: string, conceptId: string): Promise<ConceptProgress> {
   return request<ConceptProgress>(`/api/v1/learners/${learnerId}/progress/${conceptId}`);
+}
+
+/**
+ * Ask the tutoring layer for help.
+ *
+ * Nothing is persisted by this call, here or on the server: the question and any draft
+ * live only for the duration of the request. Do not add caching or storage to it.
+ */
+export function askTutor(body: TutorRequest): Promise<TutorResponse> {
+  return request<TutorResponse>("/api/v1/tutor", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }

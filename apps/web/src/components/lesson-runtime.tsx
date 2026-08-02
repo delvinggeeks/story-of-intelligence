@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { TutorPanel } from "@/components/tutor-panel";
 import { UnitCompare } from "@/components/unit-compare";
 import {
   LearnerApiError,
@@ -304,6 +305,12 @@ export function LessonRuntime({ lesson }: { lesson: LearningObject }) {
           Next
         </button>
       </div>
+
+      <TutorPanel
+        conceptId={lesson.id}
+        learnerId={learnerId}
+        stepIndex={step ? position - 1 : null}
+      />
 
       <ProgressPanel lesson={lesson} progress={progress} />
     </div>
