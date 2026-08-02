@@ -83,18 +83,39 @@ Redis is unreachable, and the lesson text stays readable throughout.
 
 ## End-to-end tests
 
-[`e2e/`](e2e) runs Playwright against the **built** app and a real API. Start both first:
+[`e2e/`](e2e) runs Playwright against the **built** app and a real API.
+
+| Spec | Covers |
+| --- | --- |
+| [`numbers-journey.spec.ts`](e2e/numbers-journey.spec.ts) | The lesson end to end, saved progress, reload persistence, the rubric verdict |
+| [`keyboard.spec.ts`](e2e/keyboard.spec.ts) | The whole lesson, the experiment, and help driven by Tab and Enter only — never `click()` |
+| [`accessibility.spec.ts`](e2e/accessibility.spec.ts) | axe-core WCAG 2.1 A/AA scans of four page states |
+| [`privacy.spec.ts`](e2e/privacy.spec.ts) | Browser storage, cookies, tutor draft retention, external requests, erasure-route exposure |
+| [`degradation.spec.ts`](e2e/degradation.spec.ts) | Loading, API outage, failed write, recovery, unknown concept, tutor outage |
+| [`tutor-help.spec.ts`](e2e/tutor-help.spec.ts) | The help flow, grounding, refusal, rubric feedback, failure state |
+
+Easiest run — Playwright starts and stops the API and the production web server itself,
+which is also how CI runs it:
 
 ```powershell
-docker compose -f infra/docker-compose.local.yml up -d
+docker compose -f infra/docker-compose.local.yml up -d --wait
 uv run --directory services/api alembic upgrade head
+npm run build:web
+$env:ACADEMY_E2E_MANAGE_SERVERS = "1"; npm run test:e2e
+```
+
+Leave `ACADEMY_E2E_MANAGE_SERVERS` unset to run against a stack you started yourself, which
+is the default so that a local server is never killed out from under you:
+
+```powershell
 uv run --directory services/api uvicorn academy_api.main:app --port 8000
-npm run build:web; npm run start --workspace @academy/web
+npm run start --workspace @academy/web
 npm run test:e2e
 ```
 
-The config deliberately has no `webServer` block: these tests are meant to exercise the
-production stack an operator actually runs, not one Playwright quietly starts for them.
+When Playwright owns the servers it writes their output to `e2e-logs/` rather than the
+console, so CI can upload it beside the traces. Traces, screenshots, and videos are kept for
+failed tests only.
 
 ## Scope
 

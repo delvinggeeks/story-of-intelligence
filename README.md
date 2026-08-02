@@ -7,7 +7,7 @@ This repository is the authoritative, Git-first workspace for the Story of Intel
 - Architecture baseline: Educational Domain Model (EDM) v1.0 — frozen
 - Governance: ADR-based
 - Production platform: `uv`/Python/FastAPI backend + Next.js/React/TypeScript frontend ([ADR-0006](docs/governance/adr/ADR-0006-production-platform-foundation.md))
-- Production scope: exactly one Numbers Learning Object (LOS v2.0)
+- Production scope: exactly one Numbers Learning Object (LOS v2.0) — a validated full-stack slice and platform foundation, not a finished curriculum
 - The former Node/static implementation is archived under [`prototype/`](prototype/) as exploratory reference only
 
 The governing baseline is [the Academy Constitution](docs/governance/academy-constitution-ssot-v1.1.md). Original conversation exports are preserved verbatim in `docs/source/`.
@@ -109,10 +109,86 @@ Individual layers: `npm run test:api`, `npm run lint:api`, `npm run typecheck:ap
 
 `npm run test:e2e` is **not** part of `verify`. Playwright drives the built app against a
 running API and database, so it needs the stack started first; see
-[`apps/web/README.md`](apps/web/README.md#end-to-end-tests).
+[`apps/web/README.md`](apps/web/README.md#end-to-end-tests). Setting
+`ACADEMY_E2E_MANAGE_SERVERS=1` makes Playwright start and stop the API and the production web
+server itself, which is how CI runs it:
+
+```powershell
+docker compose -f infra/docker-compose.local.yml up -d --wait
+uv run --directory services/api alembic upgrade head
+npm run build:web
+$env:ACADEMY_E2E_MANAGE_SERVERS = "1"; npm run test:e2e
+```
 
 Next.js telemetry is disabled for every local and CI invocation
 ([details](apps/web/README.md#telemetry)).
+
+### Clean-state validation
+
+The release check. It proves the repository builds from what is committed and nothing else —
+no leftover `.next`, virtualenv, database schema, `node_modules`, or running process.
+
+```powershell
+docker compose -f infra/docker-compose.local.yml down -v
+Remove-Item -Recurse -Force apps/web/.next, services/api/.venv, node_modules -ErrorAction SilentlyContinue
+docker compose -f infra/docker-compose.local.yml up -d --wait
+
+uv lock --directory services/api --check                    # Python lockfile is current
+uv sync --directory services/api --all-groups --locked      # install from the lockfile only
+uv run --directory services/api alembic upgrade head
+uv run --directory services/api alembic check               # models vs. migrations
+uv run --directory services/api alembic downgrade base
+uv run --directory services/api alembic upgrade head
+
+npm ci                                                      # fails if the lockfile disagrees
+npm run verify
+$env:ACADEMY_E2E_MANAGE_SERVERS = "1"; npm run test:e2e
+
+docker compose -f infra/docker-compose.local.yml down
+```
+
+No `.env` file is required: every setting has a default matching the local Compose stack.
+
+### CI matrix
+
+[`.github/workflows/verify.yml`](.github/workflows/verify.yml) runs four jobs on every push
+and pull request to `main`. Every action is pinned to an immutable commit SHA, which
+[`apps/web/tests/repository-hygiene.test.mjs`](apps/web/tests/repository-hygiene.test.mjs)
+asserts so the pinning cannot quietly regress.
+
+| Job | Services | What it proves | Gating |
+| --- | --- | --- | --- |
+| `api` | PostgreSQL | Lockfile current, Ruff, Ruff format, strict MyPy, migrations apply/`check`/reverse, pytest. `ACADEMY_REDIS_URL` empty, so the cache-disabled path is exercised | Blocking |
+| `web` | none | `npm ci` (lockfile integrity), ESLint, web tests, production build, `tsc` | Blocking |
+| `e2e` | PostgreSQL + Redis | Migrations, production build, Playwright against a Playwright-managed API and web server. Cache enabled, so this is the full production shape | Blocking |
+| `audit` | none | `npm audit --audit-level=high`, mirrored into the job summary | Advisory (`continue-on-error`) |
+
+On failure the `e2e` job uploads traces, screenshots, videos, and the captured API and web
+server logs; on success it uploads nothing.
+
+## Owner demo
+
+```powershell
+docker compose -f infra/docker-compose.local.yml up -d --wait
+uv run --directory services/api alembic upgrade head
+npm run dev:api      # terminal 1
+npm run dev:web      # terminal 2
+```
+
+Open <http://127.0.0.1:3000/concepts/numbers> and walk the slice:
+
+1. Answer the opening prompt and save it. The progress panel records it immediately.
+2. Step forward to the experiment, normalize the units, and watch the comparison change.
+3. Ask for help — the panel states it is a reader of the lesson, not an AI model, and names
+   the lesson fields each answer came from.
+4. Ask it something the lesson does not cover; it refuses rather than guessing.
+5. Submit an explanation. The rubric verdict shows the score, the threshold, and each check,
+   and says in as many words that it is a keyword check, not a judgement of understanding.
+6. Reload. Progress returns from the server, keyed to an anonymous id held in the browser.
+7. Stop the API and reload. The lesson still renders and the page says progress is not saving.
+
+The whole journey is operable from the keyboard alone; `apps/web/e2e/keyboard.spec.ts` is the
+automated version of that claim.
 
 ## Environment notes
 
@@ -151,7 +227,7 @@ Phases run A→F in order, each gated on `npm run verify`.
 | C | Local PostgreSQL/Redis persistence and migrations | **Complete.** Local Compose stack, Alembic migrations, `learner`/`learning_session`/`evidence_event` tables, an append-only evidence guarantee, a repository/service boundary, and a degradable Redis cache |
 | D | Backend-owned Numbers runtime, progress and mastery evidence | **Landed under [ADR-0007](docs/governance/adr/ADR-0007-learner-evidence-semantics.md).** Anonymous learner bootstrap, a typed closed evidence vocabulary, an interactive Numbers runtime, a replayable progress projection, compensating retraction events, and a privileged learner-subtree erasure route. "Mastery" here means the Learning Object's own keyword rubric, reported with its checks and threshold — not a judgement of understanding. Sessions are never ended (`ended_at` is unused) and no retention window is set |
 | E | Deterministic provider-neutral tutoring abstraction | **Complete.** Typed task contracts (explanation, hint, Socratic question, feedback, misconception check), provider metadata, tracing, a router, and one shipped provider that answers only by quoting and rearranging the published Learning Object. It is **not** an LLM, calls no external service, and makes no adaptive-mastery claim: its only use of evidence is to pick the next rubric check the learner has not yet matched. Asking for help writes no evidence and stores no conversation |
-| F | Playwright learner-flow E2E and full CI validation | **Partly complete.** `apps/web/e2e` covers the Numbers journey, reload persistence, the keyboard path, API/database outage handling, and the help flow against the production stack, and an `e2e` CI job now runs it with Playwright managing the servers. That job has not yet been observed running on a hosted runner, `astral-sh/setup-uv@v5` is not SHA-pinned, and coverage beyond the Numbers slice does not exist |
+| F | Playwright learner-flow E2E and full CI validation | **Complete locally.** 28 Playwright tests cover the Numbers journey, reload persistence, keyboard-only completion of the whole lesson, axe accessibility scans, browser privacy boundaries, help, and API/database/tutor outage and recovery. CI runs the API, web, and E2E jobs with every action SHA-pinned and the E2E job owning its own PostgreSQL and Redis. The full clean-state suite passes from a destroyed database, deleted `.next`, deleted virtualenv, and deleted `node_modules`. **The hosted GitHub Actions run remains unobserved until a push triggers it**, and coverage beyond the Numbers slice does not exist |
 
 ## Archived prototype
 
