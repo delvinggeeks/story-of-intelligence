@@ -1,0 +1,47 @@
+# Local development services only: PostgreSQL and Redis.
+# The API and the web app are NOT containerised here - run them from the host with
+# `npm run dev:api` and `npm run dev:web`. See README.md.
+#
+# Credentials below are deliberately weak, local-only, and non-secret. They exist so a
+# fresh clone works with no setup. Never reuse them outside a developer machine.
+
+name: academy-local
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: academy-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-academy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-academy_local_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-academy}
+    ports:
+      # Bound to loopback so the database is never exposed on the local network.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-academy} -d ${POSTGRES_DB:-academy}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:8-alpine
+    container_name: academy-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  postgres-data:
+    name: academy-postgres-data
