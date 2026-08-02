@@ -35,6 +35,12 @@ export default async function HomePage() {
         ))}
       </ul>
 
+      {graph.nodes.length === 0 ? (
+        <p className="rounded-lg border border-white/10 p-5 text-(--color-ink-muted)">
+          The Knowledge Graph is published but currently lists no concepts.
+        </p>
+      ) : null}
+
       <p className="text-xs text-(--color-ink-muted)">Knowledge Graph version {graph.version}</p>
     </div>
   );

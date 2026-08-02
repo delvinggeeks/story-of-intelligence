@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { LessonStep } from "@/components/lesson-step";
+import { LessonRuntime } from "@/components/lesson-runtime";
 import { ApiError, getLearningObject } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -47,22 +47,8 @@ export default async function ConceptPage({ params }: ConceptPageProps) {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-widest">Steps</h2>
-        <ol className="space-y-4">
-          {lesson.learning.steps.map((step, index) => (
-            <LessonStep key={`${step.kind}-${index}`} step={step} index={index} />
-          ))}
-        </ol>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-widest">Mastery evidence</h2>
-        <p className="text-(--color-ink-muted)">{lesson.measurement.postPrompt}</p>
-        <p className="text-xs text-(--color-ink-muted)">
-          Mastery requires at least {lesson.measurement.masteryRubric.threshold} of{" "}
-          {lesson.measurement.masteryRubric.checks.length} rubric checks. Evaluation is a backend
-          contract and arrives in Phase D.
-        </p>
+        <h2 className="text-sm font-semibold uppercase tracking-widest">Work through it</h2>
+        <LessonRuntime lesson={lesson} />
       </section>
     </article>
   );

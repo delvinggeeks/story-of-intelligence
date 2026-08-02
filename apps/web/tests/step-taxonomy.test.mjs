@@ -52,8 +52,8 @@ test("no frontend source enumerates the step taxonomy", async () => {
   }
 });
 
-test("the step component renders the API-supplied label", async () => {
-  const component = await readFile(path.join(srcRoot, "components", "lesson-step.tsx"), "utf8");
+test("the runtime renders the API-supplied step label", async () => {
+  const component = await readFile(path.join(srcRoot, "components", "lesson-runtime.tsx"), "utf8");
   assert.match(component, /\{step\.label\}/);
   assert.doesNotMatch(component, /STEP_LABELS|Record<StepKind/);
 });
