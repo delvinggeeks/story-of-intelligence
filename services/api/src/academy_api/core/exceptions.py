@@ -16,3 +16,11 @@ class ImmutableRecordError(RuntimeError):
 
 class DatabaseUnavailableError(RuntimeError):
     """Raised when the database is required but cannot be reached."""
+
+
+class EvidenceContractError(ValueError):
+    """Raised when an evidence event violates the ADR-0007 vocabulary or payload contract."""
+
+
+class ErasureNotPermittedError(RuntimeError):
+    """Raised when a privileged erasure is attempted without valid authorisation."""
