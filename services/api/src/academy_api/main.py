@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from academy_api import __version__
+from academy_api.api.internal import erasure as internal_erasure
 from academy_api.api.v1.router import api_router
 from academy_api.api.v1.routes import health
 from academy_api.cache.backends import build_cache
@@ -15,6 +16,8 @@ from academy_api.core.exceptions import (
     ContentIntegrityError,
     ContentNotFoundError,
     DatabaseUnavailableError,
+    ErasureNotPermittedError,
+    EvidenceContractError,
     ImmutableRecordError,
 )
 from academy_api.db.session import Database
@@ -78,8 +81,21 @@ def create_app() -> FastAPI:
         logger.error("Append-only violation: %s", exc)
         return JSONResponse(status_code=409, content={"detail": str(exc)})
 
+    @app.exception_handler(EvidenceContractError)
+    def _evidence_contract(_: Request, exc: EvidenceContractError) -> JSONResponse:
+        # The message names the offending kind or field, so a client can fix the call.
+        return JSONResponse(status_code=422, content={"detail": str(exc)})
+
+    @app.exception_handler(ErasureNotPermittedError)
+    def _erasure_denied(_: Request, exc: ErasureNotPermittedError) -> JSONResponse:
+        logger.warning("Erasure refused: %s", exc)
+        return JSONResponse(status_code=403, content={"detail": "Erasure is not permitted."})
+
     app.include_router(health.router)
     app.include_router(api_router, prefix=settings.api_v1_prefix)
+    if settings.erasure_token:
+        # Unconfigured means the route does not exist at all, rather than existing and refusing.
+        app.include_router(internal_erasure.router)
     return app
 
 

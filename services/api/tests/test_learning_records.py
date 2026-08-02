@@ -34,6 +34,7 @@ def build_service(session: AsyncSession) -> LearningRecordService:
         SqlLearnerRepository(session),
         SqlLearningSessionRepository(session),
         SqlEvidenceRepository(session),
+        session,
     )
 
 

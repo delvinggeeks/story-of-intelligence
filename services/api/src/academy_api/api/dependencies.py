@@ -56,6 +56,7 @@ def get_learning_record_service(session: DbSessionDep) -> LearningRecordService:
         SqlLearnerRepository(session),
         SqlLearningSessionRepository(session),
         SqlEvidenceRepository(session),
+        session,
     )
 
 

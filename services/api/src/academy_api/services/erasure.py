@@ -68,6 +68,9 @@ async def erase_learner(session: AsyncSession, learner_id: uuid.UUID) -> Erasure
 
     session.expunge(learner)
     await session.execute(delete(Learner).where(Learner.id == learner_id))
+    # Committed before the receipt is returned: a receipt that outran its own transaction
+    # would claim an erasure that had not happened yet.
+    await session.commit()
 
     logger.warning(
         "ERASURE learner=%s sessions=%d events=%d",

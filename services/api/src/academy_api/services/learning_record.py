@@ -8,6 +8,7 @@ from the event stream instead of freezing it into the record.
 
 import uuid
 from datetime import datetime
+from typing import Protocol
 
 from academy_api.core.exceptions import ContentNotFoundError, EvidenceContractError
 from academy_api.db.models import EvidenceEvent, Learner, LearningSession
@@ -24,19 +25,32 @@ from academy_api.repositories.learning import (
 )
 
 
+class UnitOfWork(Protocol):
+    """Just enough of a session to end one. Keeps SQLAlchemy out of this module."""
+
+    async def commit(self) -> None: ...
+
+
 class LearningRecordService:
     def __init__(
         self,
         learners: LearnerRepository,
         sessions: LearningSessionRepository,
         evidence: EvidenceRepository,
+        unit_of_work: UnitOfWork,
     ) -> None:
         self._learners = learners
         self._sessions = sessions
         self._evidence = evidence
+        self._uow = unit_of_work
 
     async def register_learner(self) -> LearnerRecord:
-        return _learner_record(await self._learners.create())
+        learner = await self._learners.create()
+        # Committed here, not in dependency teardown: FastAPI runs teardown after the
+        # response is sent, so a client that immediately used this id could race the
+        # commit and be told its own learner does not exist.
+        await self._uow.commit()
+        return _learner_record(learner)
 
     async def get_learner(self, learner_id: uuid.UUID) -> LearnerRecord:
         learner = await self._learners.get(learner_id)
@@ -47,7 +61,9 @@ class LearningRecordService:
     async def start_session(self, learner_id: uuid.UUID, concept_id: str) -> LearningSessionRecord:
         if await self._learners.get(learner_id) is None:
             raise ContentNotFoundError(f"No learner with id '{learner_id}'.")
-        return _session_record(await self._sessions.start(learner_id, concept_id))
+        started = await self._sessions.start(learner_id, concept_id)
+        await self._uow.commit()
+        return _session_record(started)
 
     async def resume_or_start_session(
         self, learner_id: uuid.UUID, concept_id: str
@@ -58,12 +74,15 @@ class LearningRecordService:
         existing = await self._sessions.find_open(learner_id, concept_id)
         if existing is not None:
             return _session_record(existing)
-        return _session_record(await self._sessions.start(learner_id, concept_id))
+        started = await self._sessions.start(learner_id, concept_id)
+        await self._uow.commit()
+        return _session_record(started)
 
     async def end_session(self, session_id: uuid.UUID) -> LearningSessionRecord:
         learning_session = await self._sessions.end(session_id)
         if learning_session is None:
             raise ContentNotFoundError(f"No learning session with id '{session_id}'.")
+        await self._uow.commit()
         return _session_record(learning_session)
 
     async def list_sessions(
@@ -89,6 +108,7 @@ class LearningRecordService:
             await self._assert_retractable(learning_session, stored)
 
         event = await self._evidence.append(session_id, kind, stored, occurred_at)
+        await self._uow.commit()
         return _evidence_record(event)
 
     async def _assert_retractable(
