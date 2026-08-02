@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Iterator
 
 import pytest
@@ -118,3 +119,23 @@ def test_content_still_renders_while_the_database_is_down() -> None:
 
         assert response.status_code == 200
         assert response.json()["nodes"][0]["id"] == "numbers"
+
+
+def test_the_app_configures_logging_so_its_own_records_are_emitted() -> None:
+    """uvicorn configures only its own loggers; without this, INFO lines vanish."""
+    root = logging.getLogger()
+    saved_handlers, saved_level = root.handlers[:], root.level
+    for handler in saved_handlers:
+        root.removeHandler(handler)
+
+    try:
+        create_app()
+
+        assert root.handlers, "the application left the root logger without a handler"
+        assert logging.getLogger("academy_api.services.tutoring").isEnabledFor(logging.INFO)
+    finally:
+        for handler in root.handlers[:]:
+            root.removeHandler(handler)
+        for handler in saved_handlers:
+            root.addHandler(handler)
+        root.setLevel(saved_level)

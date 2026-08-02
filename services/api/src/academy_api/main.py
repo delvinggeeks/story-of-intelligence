@@ -28,6 +28,13 @@ logger = logging.getLogger(__name__)
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    # uvicorn only configures its own loggers, so without this the application's records
+    # reach Python's handler of last resort and everything below WARNING is discarded.
+    # A no-op where a host has already configured logging.
+    logging.basicConfig(
+        level=settings.log_level.upper(),
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:

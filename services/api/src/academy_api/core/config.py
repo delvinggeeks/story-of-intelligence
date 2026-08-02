@@ -37,6 +37,7 @@ class Settings(BaseSettings):
 
     environment: str = "local"
     api_v1_prefix: str = "/api/v1"
+    log_level: str = "INFO"
     content_root: Path = Field(default_factory=_default_content_root)
     cors_origins: list[str] = Field(default=["http://127.0.0.1:3000", "http://localhost:3000"])
 

@@ -72,6 +72,7 @@ Settings are read from `ACADEMY_`-prefixed environment variables, or from `.env`
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `ACADEMY_ENVIRONMENT` | `local` | Free-form deployment label |
+| `ACADEMY_LOG_LEVEL` | `INFO` | Root log level. Applied by the app factory; uvicorn configures only its own loggers |
 | `ACADEMY_CONTENT_ROOT` | `<repo>/packages/content` | Canonical content directory |
 | `ACADEMY_CORS_ORIGINS` | localhost:3000 pair | JSON list of allowed browser origins |
 | `ACADEMY_DATABASE_URL` | local Compose DSN | **Must** use the `postgresql+asyncpg://` driver |
