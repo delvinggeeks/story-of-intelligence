@@ -5,9 +5,15 @@ import { defineConfig, devices } from "@playwright/test";
  * A dev-server run would hide build-time failures, which is the class of bug this is
  * meant to catch.
  *
- * The stack is started by the caller (see the repository README) rather than by a
- * webServer block, because the API and its containers are not owned by this workspace.
+ * By default the caller starts the stack (see the repository README), because the
+ * containers are not owned by this workspace. Set ACADEMY_E2E_MANAGE_SERVERS=1 — as CI
+ * does, once its PostgreSQL service and migrations are up — to have Playwright start and
+ * stop the API and the web server itself.
  */
+const API_URL = process.env.NEXT_PUBLIC_ACADEMY_API_URL ?? "http://127.0.0.1:8000";
+const WEB_URL = process.env.ACADEMY_WEB_URL ?? "http://127.0.0.1:3000";
+const manageServers = process.env.ACADEMY_E2E_MANAGE_SERVERS === "1";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -18,8 +24,32 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 10_000 },
   use: {
-    baseURL: process.env.ACADEMY_WEB_URL ?? "http://127.0.0.1:3000",
+    baseURL: WEB_URL,
     trace: "retain-on-failure",
   },
+  ...(manageServers
+    ? {
+        webServer: [
+          {
+            command:
+              "uv run --directory ../../services/api uvicorn academy_api.main:app --host 127.0.0.1 --port 8000",
+            url: `${API_URL}/health/live`,
+            reuseExistingServer: !process.env.CI,
+            timeout: 120_000,
+            stdout: "pipe" as const,
+            stderr: "pipe" as const,
+          },
+          {
+            // `start` and not `dev`: the production build is the thing under test.
+            command: "npm run start",
+            url: WEB_URL,
+            reuseExistingServer: !process.env.CI,
+            timeout: 120_000,
+            stdout: "pipe" as const,
+            stderr: "pipe" as const,
+          },
+        ],
+      }
+    : {}),
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });
