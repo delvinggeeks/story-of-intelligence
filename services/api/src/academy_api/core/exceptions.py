@@ -8,3 +8,11 @@ class ContentNotFoundError(LookupError):
 
 class ContentIntegrityError(ValueError):
     """Raised when a canonical content artifact exists but violates its contract."""
+
+
+class ImmutableRecordError(RuntimeError):
+    """Raised when code attempts to modify or delete an append-only record."""
+
+
+class DatabaseUnavailableError(RuntimeError):
+    """Raised when the database is required but cannot be reached."""
