@@ -60,9 +60,9 @@ class TutorRequest(TutoringModel):
     concept_id: str = Field(alias="conceptId", max_length=128)
     step_index: int | None = Field(alias="stepIndex", default=None, ge=0, le=512)
     learner_id: uuid.UUID | None = Field(alias="learnerId", default=None)
+    # The learner's own words: a question for most tasks, or their draft for `feedback`.
     question: str | None = Field(default=None, max_length=MAX_QUESTION_LENGTH)
     provider_id: str | None = Field(alias="providerId", default=None)
-    """The learner's own words: a question for most tasks, or their draft for `feedback`."""
 
 
 class Citation(TutoringModel):
