@@ -24,3 +24,15 @@ class EvidenceContractError(ValueError):
 
 class ErasureNotPermittedError(RuntimeError):
     """Raised when a privileged erasure is attempted without valid authorisation."""
+
+
+class TutoringError(RuntimeError):
+    """Base for failures in the provider-neutral tutoring layer."""
+
+
+class UnknownProviderError(TutoringError):
+    """Raised when a tutoring request names a provider that is not registered."""
+
+
+class UnsupportedTaskError(TutoringError):
+    """Raised when the selected provider does not implement the requested task."""

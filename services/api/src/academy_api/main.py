@@ -19,6 +19,7 @@ from academy_api.core.exceptions import (
     ErasureNotPermittedError,
     EvidenceContractError,
     ImmutableRecordError,
+    TutoringError,
 )
 from academy_api.db.session import Database
 
@@ -90,6 +91,11 @@ def create_app() -> FastAPI:
     def _erasure_denied(_: Request, exc: ErasureNotPermittedError) -> JSONResponse:
         logger.warning("Erasure refused: %s", exc)
         return JSONResponse(status_code=403, content={"detail": "Erasure is not permitted."})
+
+    @app.exception_handler(TutoringError)
+    def _tutoring(_: Request, exc: TutoringError) -> JSONResponse:
+        # Names the unknown provider or unsupported task; carries no learner text.
+        return JSONResponse(status_code=422, content={"detail": str(exc)})
 
     app.include_router(health.router)
     app.include_router(api_router, prefix=settings.api_v1_prefix)

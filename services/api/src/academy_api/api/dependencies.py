@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from academy_api.cache.backends import Cache
 from academy_api.core.config import Settings, get_settings
 from academy_api.db.session import Database
+from academy_api.providers import DeterministicLosProvider
 from academy_api.repositories.content import ContentRepository, FileContentRepository
 from academy_api.repositories.learning import (
     SqlEvidenceRepository,
@@ -15,6 +16,7 @@ from academy_api.repositories.learning import (
 )
 from academy_api.services.learning_record import LearningRecordService
 from academy_api.services.progress import ProgressService
+from academy_api.services.tutoring import TutoringService
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
@@ -70,3 +72,17 @@ def get_progress_service(
 
 
 ProgressServiceDep = Annotated[ProgressService, Depends(get_progress_service)]
+
+
+def get_tutoring_service(
+    content: ContentRepositoryDep, progress: ProgressServiceDep, settings: SettingsDep
+) -> TutoringService:
+    return TutoringService(
+        content,
+        [DeterministicLosProvider()],
+        settings.tutor_provider,
+        progress,
+    )
+
+
+TutoringServiceDep = Annotated[TutoringService, Depends(get_tutoring_service)]

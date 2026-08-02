@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     # ADR-0007 D6 erasure. Unset means the endpoint does not exist, not that it is open.
     erasure_token: str | None = None
 
+    # ADR-0006 Phase E ships one local deterministic provider and no external one.
+    tutor_provider: str = "deterministic-los"
+
     @field_validator("content_root")
     @classmethod
     def _anchor_content_root(cls, value: Path) -> Path:
