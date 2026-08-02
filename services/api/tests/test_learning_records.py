@@ -6,17 +6,27 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from academy_api.core.exceptions import ContentNotFoundError, ImmutableRecordError
+from academy_api.core.exceptions import (
+    ContentNotFoundError,
+    EvidenceContractError,
+    ImmutableRecordError,
+)
+from academy_api.domain.evidence import EvidenceKind
 from academy_api.repositories.learning import (
     SqlEvidenceRepository,
     SqlLearnerRepository,
     SqlLearningSessionRepository,
 )
-from academy_api.services.learning_record import MAX_PAYLOAD_KEYS, LearningRecordService
+from academy_api.services.learning_record import LearningRecordService
 
 pytestmark = pytest.mark.database
 
 CONCEPT = "numbers"
+VERSION = "2.0.0"
+
+
+def started_payload() -> dict[str, object]:
+    return {"conceptVersion": VERSION}
 
 
 def build_service(session: AsyncSession) -> LearningRecordService:
@@ -74,23 +84,27 @@ async def test_sessions_are_listed_per_learner_and_concept(db_session: AsyncSess
     assert len(await service.list_sessions(other.id, CONCEPT)) == 1
 
 
-async def test_evidence_is_appended_in_order_with_an_opaque_payload(
+async def test_evidence_is_appended_in_order_with_a_typed_payload(
     db_session: AsyncSession,
 ) -> None:
     service = build_service(db_session)
     learner = await service.register_learner()
     learning_session = await service.start_session(learner.id, CONCEPT)
 
-    first = await service.record_evidence(learning_session.id, "answer-submitted", {"a": 1})
+    first = await service.record_evidence(
+        learning_session.id, EvidenceKind.STEP_VIEWED, {"stepIndex": 0}
+    )
     second = await service.record_evidence(
-        learning_session.id, "answer-submitted", {"nested": {"b": [1, 2]}}
+        learning_session.id,
+        EvidenceKind.REFLECTION_SUBMITTED,
+        {"phase": "pre", "response": "Same unit first."},
     )
 
     events = await service.list_evidence(learning_session.id)
     assert [event.id for event in events] == [first.id, second.id]
     assert first.sequence < second.sequence
-    # The payload round-trips untouched: Phase C stores it and interprets nothing.
-    assert events[1].payload == {"nested": {"b": [1, 2]}}
+    # The kind lives in its own column and is not duplicated into the payload.
+    assert events[1].payload == {"phase": "pre", "response": "Same unit first."}
 
 
 async def test_replay_order_survives_a_burst_written_in_one_transaction(
@@ -102,7 +116,9 @@ async def test_replay_order_survives_a_burst_written_in_one_transaction(
     learning_session = await service.start_session(learner.id, CONCEPT)
 
     written = [
-        await service.record_evidence(learning_session.id, "step-viewed", {"index": index})
+        await service.record_evidence(
+            learning_session.id, EvidenceKind.STEP_VIEWED, {"stepIndex": index}
+        )
         for index in range(25)
     ]
 
@@ -121,7 +137,9 @@ async def test_evidence_accepts_a_caller_supplied_occurrence_time(
     learning_session = await service.start_session(learner.id, CONCEPT)
     earlier = datetime.now(UTC) - timedelta(hours=2)
 
-    event = await service.record_evidence(learning_session.id, "resumed", {}, occurred_at=earlier)
+    event = await service.record_evidence(
+        learning_session.id, EvidenceKind.LESSON_STARTED, started_payload(), occurred_at=earlier
+    )
 
     assert event.occurred_at == earlier
     # recorded_at is server-assigned and independent of the claimed occurrence time.
@@ -130,24 +148,38 @@ async def test_evidence_accepts_a_caller_supplied_occurrence_time(
 
 async def test_evidence_requires_an_existing_session(db_session: AsyncSession) -> None:
     with pytest.raises(ContentNotFoundError):
-        await build_service(db_session).record_evidence(uuid.uuid4(), "answer-submitted", {})
+        await build_service(db_session).record_evidence(
+            uuid.uuid4(), EvidenceKind.LESSON_STARTED, started_payload()
+        )
 
 
-async def test_oversized_evidence_payload_is_rejected(db_session: AsyncSession) -> None:
+async def test_evidence_of_an_unknown_kind_is_rejected(db_session: AsyncSession) -> None:
     service = build_service(db_session)
     learner = await service.register_learner()
     learning_session = await service.start_session(learner.id, CONCEPT)
-    payload: dict[str, object] = {str(index): index for index in range(MAX_PAYLOAD_KEYS + 1)}
 
-    with pytest.raises(ValueError, match="limit is"):
-        await service.record_evidence(learning_session.id, "answer-submitted", payload)
+    with pytest.raises(EvidenceContractError, match="Unknown evidence kind"):
+        await service.record_evidence(learning_session.id, "answer-submitted", {})
+
+
+async def test_evidence_with_an_invalid_payload_is_rejected(db_session: AsyncSession) -> None:
+    service = build_service(db_session)
+    learner = await service.register_learner()
+    learning_session = await service.start_session(learner.id, CONCEPT)
+
+    with pytest.raises(EvidenceContractError, match="does not match the contract"):
+        await service.record_evidence(
+            learning_session.id, EvidenceKind.STEP_VIEWED, {"stepIndex": -1}
+        )
 
 
 async def test_evidence_cannot_be_updated(db_session: AsyncSession) -> None:
     service = build_service(db_session)
     learner = await service.register_learner()
     learning_session = await service.start_session(learner.id, CONCEPT)
-    await service.record_evidence(learning_session.id, "answer-submitted", {"a": 1})
+    await service.record_evidence(
+        learning_session.id, EvidenceKind.LESSON_STARTED, started_payload()
+    )
 
     stored = (await SqlEvidenceRepository(db_session).list_for_session(learning_session.id))[0]
     stored.kind = "tampered"
@@ -160,7 +192,9 @@ async def test_evidence_cannot_be_deleted(db_session: AsyncSession) -> None:
     service = build_service(db_session)
     learner = await service.register_learner()
     learning_session = await service.start_session(learner.id, CONCEPT)
-    await service.record_evidence(learning_session.id, "answer-submitted", {"a": 1})
+    await service.record_evidence(
+        learning_session.id, EvidenceKind.LESSON_STARTED, started_payload()
+    )
 
     stored = (await SqlEvidenceRepository(db_session).list_for_session(learning_session.id))[0]
     await db_session.delete(stored)
