@@ -106,6 +106,73 @@ jobs:
       - name: Type check
         run: npm run typecheck:web
 
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      UV_LINK_MODE: copy
+      NEXT_TELEMETRY_DISABLED: "1"
+      ACADEMY_DATABASE_URL: postgresql+asyncpg://academy:academy_local_dev@127.0.0.1:5432/academy
+      ACADEMY_REDIS_URL: ""
+      # Playwright starts and stops the API and the production web server itself.
+      ACADEMY_E2E_MANAGE_SERVERS: "1"
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: academy
+          POSTGRES_PASSWORD: academy_local_dev
+          POSTGRES_DB: academy
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U academy -d academy"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install API dependencies
+        run: uv sync --directory services/api --all-groups --locked
+
+      - name: Install web dependencies
+        run: npm ci
+
+      - name: Apply migrations
+        run: uv run --directory services/api alembic upgrade head
+
+      # The suite runs against the production build, not the dev server.
+      - name: Build
+        run: npm run build:web
+
+      - name: Install Chromium
+        run: npx --workspace @academy/web playwright install --with-deps chromium
+
+      - name: End-to-end
+        run: npm run test:e2e
+
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: apps/web/test-results
+          retention-days: 7
+
   audit:
     name: Dependency audit (advisory)
     runs-on: ubuntu-latest
