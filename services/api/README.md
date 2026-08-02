@@ -45,8 +45,8 @@ OpenAPI is served at `/docs` and `/openapi.json` while the server runs.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| GET | `/health/live` | Liveness probe |
-| GET | `/health/ready` | Readiness probe |
+| GET | `/health/live` | Liveness probe. Process-only, so it cannot flap with the database |
+| GET | `/health/ready` | Readiness probe. Reports database and cache separately; `503` when the database is unreachable |
 | GET | `/api/v1/graph` | Canonical Knowledge Graph |
 | GET | `/api/v1/learning-objects/{concept_id}` | One canonical Learning Object |
 
@@ -63,6 +63,78 @@ Settings are read from `ACADEMY_`-prefixed environment variables, or from `.env`
 | `ACADEMY_ENVIRONMENT` | `local` | Free-form deployment label |
 | `ACADEMY_CONTENT_ROOT` | `<repo>/packages/content` | Canonical content directory |
 | `ACADEMY_CORS_ORIGINS` | localhost:3000 pair | JSON list of allowed browser origins |
+| `ACADEMY_DATABASE_URL` | local Compose DSN | **Must** use the `postgresql+asyncpg://` driver |
+| `ACADEMY_DATABASE_POOL_SIZE` | `5` | Pooled connections |
+| `ACADEMY_DATABASE_MAX_OVERFLOW` | `5` | Extra connections above the pool |
+| `ACADEMY_DATABASE_ECHO` | `false` | Log every statement |
+| `ACADEMY_REDIS_URL` | local Compose DSN | Empty disables the cache entirely |
+| `ACADEMY_CACHE_REQUIRED` | `false` | Make a missing cache URL a startup error |
+| `ACADEMY_CACHE_DEFAULT_TTL_SECONDS` | `300` | Default entry lifetime |
+
+A plain `postgresql://` URL is rejected at startup with the exact corrected URL in the
+error message, because the sync driver would deadlock the async engine rather than fail
+visibly.
+
+## Persistence
+
+Three tables, created by [`migrations/`](migrations) and mapped in
+[`db/models.py`](src/academy_api/db/models.py):
+
+| Table | Holds |
+| --- | --- |
+| `learner` | An anonymous, server-generated UUID. No credential and no personal data |
+| `learning_session` | One learner working on one concept, with start and optional end |
+| `evidence_event` | An append-only observation about a session |
+
+These tables store **facts, not judgements**. `evidence_event.kind` and `payload` are
+opaque: nothing branches on their contents. Their meaning, the retention policy, and the
+identity model are deliberately undecided and are raised in proposed
+[ADR-0007](../../docs/governance/adr/ADR-0007-learner-evidence-semantics.md).
+
+`evidence_event` is **immutable by contract**. The repository exposes no update and no
+delete, and [`db/immutability.py`](src/academy_api/db/immutability.py) rejects any
+modification that reaches a flush with `ImmutableRecordError` (surfaced as HTTP `409`).
+Correct a mistake by appending a compensating event.
+
+`evidence_event.sequence`, a database identity column, is the authoritative replay order.
+Timestamps are not sufficient: PostgreSQL `now()` is transaction-start time, so events
+written inside one transaction share a `recorded_at`.
+
+Routes never see SQLAlchemy. [`repositories/learning.py`](src/academy_api/repositories/learning.py)
+and [`services/learning_record.py`](src/academy_api/services/learning_record.py) return frozen
+DTOs, so Phase D can persist progress without coupling routes to SQL.
+
+### Migrations
+
+```powershell
+uv run --directory services/api alembic upgrade head
+uv run --directory services/api alembic current
+uv run --directory services/api alembic check          # fails on model/migration drift
+uv run --directory services/api alembic downgrade base
+```
+
+`alembic.ini` stores no URL; it is injected from `ACADEMY_DATABASE_URL` at runtime.
+
+## Cache
+
+Redis is a cache and never a source of truth, so content rendering must work without it.
+[`cache/backends.py`](src/academy_api/cache/backends.py) exposes only `get`/`set`/`delete`
+behind a `Cache` protocol, and **no method may raise on a backend failure**: an
+unreachable Redis logs a warning, reports `degraded` on `/health/ready`, and turns every
+read into a miss and every write into a no-op.
+
+Set `ACADEMY_CACHE_REQUIRED=true` only where a missing cache should be a startup error.
+
+## Tests
+
+Tests marked `database` need a reachable PostgreSQL and otherwise skip with the exact
+command to start one. Each database test runs inside a transaction that is always rolled
+back, so runs do not leak state.
+
+```powershell
+docker compose -f ../../infra/docker-compose.local.yml up -d
+uv run --directory services/api pytest
+```
 
 `.env` resolution is **absolute and working-directory independent**. Files are read in
 this order, later winning: repository root `.env`, then `services/api/.env`. Both paths
@@ -99,5 +171,7 @@ runs agree.
 ## Scope
 
 Production scope is exactly one Numbers Learning Object (ADR-0006 acceptance criterion 3).
-Progress, mastery evidence, and tutoring contracts arrive in Phase D; PostgreSQL and
-migrations arrive in Phase C. Nothing here depends on the archived Node prototype.
+Phase C added the persistence foundation only: the tables exist and are exercised by tests,
+but no route writes evidence yet. Progress, mastery evidence, and tutoring contracts arrive
+in Phase D and are blocked on proposed ADR-0007. Nothing here depends on the archived Node
+prototype.

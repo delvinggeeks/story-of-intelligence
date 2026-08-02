@@ -33,20 +33,61 @@ reads content files, and no page is served as static HTML.
 
 - [`uv`](https://docs.astral.sh/uv/) (manages Python; no system Python install required)
 - Node.js >= 20
+- Docker Desktop (local PostgreSQL and Redis only)
 
 ## Local run
 
 ```powershell
 Copy-Item .env.example .env
 
-# terminal 1 — API on http://127.0.0.1:8000 (OpenAPI at /docs)
+# terminal 1 — PostgreSQL on 127.0.0.1:5432 and Redis on 127.0.0.1:6379
+docker compose -f infra/docker-compose.local.yml up -d
 uv sync --directory services/api --all-groups
+uv run --directory services/api alembic upgrade head
+
+# terminal 1 — API on http://127.0.0.1:8000 (OpenAPI at /docs)
 npm run dev:api
 
 # terminal 2 — web on http://127.0.0.1:3000
 npm install
 npm run dev:web
 ```
+
+Shut down when finished. `down` keeps the data volume; `down -v` destroys it.
+
+```powershell
+docker compose -f infra/docker-compose.local.yml down
+docker compose -f infra/docker-compose.local.yml down -v   # also drop the data
+```
+
+### What needs which service
+
+| Capability | PostgreSQL | Redis |
+| --- | --- | --- |
+| Serving the Numbers lesson (`/api/v1/...`, the web UI) | not required | not required |
+| `GET /health/ready` reporting `ready` | required | not required |
+| Learner, session, and evidence persistence | required | not required |
+
+Redis is a cache and never a source of truth. Leave `ACADEMY_REDIS_URL` empty to disable it:
+the API starts normally, `/health/ready` reports the cache as `disabled`, and every read is a
+miss. If Redis is configured but unreachable, the cache reports `degraded` and still degrades
+to misses rather than failing a request.
+
+When PostgreSQL is down the API still starts and still serves content; `/health/ready` returns
+`503` and names the problem. Connections are opened lazily precisely so that readiness can
+report *why* it is down instead of the process failing to boot.
+
+### Migrations
+
+```powershell
+uv run --directory services/api alembic upgrade head      # apply
+uv run --directory services/api alembic current           # show the applied revision
+uv run --directory services/api alembic check             # models vs. migrations drift
+uv run --directory services/api alembic downgrade base    # roll everything back
+```
+
+The migration URL comes from `ACADEMY_DATABASE_URL` at runtime; no credentials are stored in
+`alembic.ini`.
 
 `.env` is read from the repository root (and optionally `services/api/.env`) using absolute
 paths, so the API behaves the same however it is launched. A relative `ACADEMY_CONTENT_ROOT`
@@ -56,8 +97,12 @@ resolves against the repository root, not the working directory. See
 ## Verification
 
 ```powershell
+docker compose -f infra/docker-compose.local.yml up -d   # database-backed tests need this
 npm run verify     # ruff + mypy + pytest + eslint + web tests + next build + tsc
 ```
+
+Tests marked `database` skip with an actionable message when PostgreSQL is unreachable, so
+`npm run verify` still passes without Docker — it just proves less.
 
 Individual layers: `npm run test:api`, `npm run lint:api`, `npm run typecheck:api`,
 `npm run test:web`, `npm run typecheck:web`, `npm run lint:web`, `npm run build:web`.
@@ -99,7 +144,7 @@ Phases run A→F in order, each gated on `npm run verify`.
 | --- | --- | --- |
 | A | `uv`/FastAPI backend foundation | Complete |
 | B | Next.js/TypeScript learner surface | Complete; the A→B ordering is accepted retrospectively as covered by ADR-0006 |
-| C | Local PostgreSQL/Redis persistence and migrations | **Deferred, not started.** Content is served read-only from files. There is no database, no migrations, and no progress persistence in the production path |
+| C | Local PostgreSQL/Redis persistence and migrations | **Foundation landed.** Local Compose stack, Alembic migrations, `learner`/`learning_session`/`evidence_event` tables, an append-only evidence guarantee, a repository/service boundary, and a degradable Redis cache. Content is still served read-only from files. No progress UI, no mastery logic, and no route yet writes evidence |
 | D | Backend-owned Numbers runtime, progress and mastery evidence | Deferred |
 | E | Deterministic provider-neutral tutoring abstraction | Deferred |
 | F | Playwright learner-flow E2E and full CI validation | **Deferred.** Automated coverage today is pytest, the web contract tests, and static checks. The production stack has no end-to-end browser coverage; the archived prototype's Playwright suite is not part of production CI |
