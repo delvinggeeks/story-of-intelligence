@@ -19,10 +19,18 @@ test("the browser stores only an opaque learner identifier", async () => {
   assert.match(identity, /UUID_PATTERN/);
 });
 
+/** Comments explain the guarantee and name what is *not* stored, so scan code only. */
+const withoutComments = (source) =>
+  source.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/.*$/gm, "$1");
+
 test("no frontend source persists personal data", async () => {
   const forbidden = ["email", "fullName", "displayName", "fingerprint"];
-  const identity = await readFile(path.join(srcRoot, "lib", "learner-identity.ts"), "utf8");
-  const client = await readFile(path.join(srcRoot, "lib", "learner-api.ts"), "utf8");
+  const identity = withoutComments(
+    await readFile(path.join(srcRoot, "lib", "learner-identity.ts"), "utf8"),
+  );
+  const client = withoutComments(
+    await readFile(path.join(srcRoot, "lib", "learner-api.ts"), "utf8"),
+  );
 
   for (const term of forbidden) {
     assert.ok(!identity.includes(term), `learner-identity.ts references ${term}`);
