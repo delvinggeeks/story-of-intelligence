@@ -12,6 +12,7 @@
     "lint:web": "npm run lint --workspace @academy/web",
     "typecheck:web": "npm run typecheck --workspace @academy/web",
     "test:web": "npm run test --workspace @academy/web",
+    "test:e2e": "npm run test:e2e --workspace @academy/web",
     "dev:api": "uv run --directory services/api uvicorn academy_api.main:app --reload --port 8000",
     "test:api": "uv run --directory services/api pytest",
     "lint:api": "uv run --directory services/api ruff check .",

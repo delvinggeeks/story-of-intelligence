@@ -8,7 +8,8 @@
     "start": "node ./scripts/next.mjs start --port 3000",
     "lint": "eslint .",
     "typecheck": "node ./scripts/next.mjs typegen && tsc --noEmit",
-    "test": "node --test \"tests/**/*.test.mjs\""
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "next": "^16.2.12",
@@ -17,6 +18,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^24.5.2",
     "@types/react": "^19.1.13",
