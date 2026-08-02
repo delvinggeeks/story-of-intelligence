@@ -75,3 +75,32 @@ def test_api_serves_content_under_the_documented_environment(
 
     with TestClient(create_app()) as client:
         assert client.get("/api/v1/graph").json()["nodes"][0]["id"] == "numbers"
+
+
+def test_a_sync_postgres_driver_is_rejected_with_the_exact_replacement(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("ACADEMY_DATABASE_URL", "postgresql://academy@127.0.0.1:5432/academy")
+
+    with pytest.raises(ConfigurationError, match="postgresql\\+asyncpg://academy@"):
+        Settings()
+
+
+def test_a_foreign_database_scheme_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ACADEMY_DATABASE_URL", "mysql+aiomysql://academy@127.0.0.1/academy")
+
+    with pytest.raises(ConfigurationError, match="must start with"):
+        Settings()
+
+
+def test_the_default_database_url_targets_local_compose_and_holds_no_real_secret() -> None:
+    url = Settings().database_url
+
+    assert url.startswith("postgresql+asyncpg://")
+    assert "127.0.0.1:5432" in url
+
+
+def test_an_empty_redis_url_disables_the_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ACADEMY_REDIS_URL", "")
+
+    assert Settings().redis_url is None
