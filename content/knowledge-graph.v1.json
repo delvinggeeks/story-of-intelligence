@@ -1,4 +1,16 @@
 {
-  "version": "1.0.0",
-  "nodes": [{ "id": "numbers", "learningObject": "numbers.v1.json", "prerequisites": [], "relatedConcepts": ["counting", "quantity", "number-line"] }]
+  "version": "1.1.0",
+  "nodes": [
+    { "id": "numbers", "learningObject": "numbers.v2.json", "prerequisites": [], "relatedConcepts": ["counting", "quantity", "number-line"] },
+    { "id": "variables-algebra", "learningObject": "variables-algebra.v2.json", "prerequisites": ["numbers"], "relatedConcepts": ["expressions", "equations", "unknowns"] },
+    { "id": "functions-graphs", "learningObject": "functions-graphs.v2.json", "prerequisites": ["variables-algebra"], "relatedConcepts": ["input", "output", "mapping"] },
+    { "id": "coordinates-vectors", "learningObject": "coordinates-vectors.v2.json", "prerequisites": ["functions-graphs"], "relatedConcepts": ["position", "direction", "features"] },
+    { "id": "matrices-transformations", "learningObject": "matrices-transformations.v2.json", "prerequisites": ["coordinates-vectors"], "relatedConcepts": ["tables", "linear-transformations", "systems"] },
+    { "id": "probability-uncertainty", "learningObject": "probability-uncertainty.v2.json", "prerequisites": ["matrices-transformations"], "relatedConcepts": ["events", "chance", "conditional-probability"] },
+    { "id": "statistics-distributions", "learningObject": "statistics-distributions.v2.json", "prerequisites": ["probability-uncertainty"], "relatedConcepts": ["mean", "variance", "sampling"] },
+    { "id": "derivatives-gradients", "learningObject": "derivatives-gradients.v2.json", "prerequisites": ["statistics-distributions"], "relatedConcepts": ["rate-of-change", "slope", "calculus"] },
+    { "id": "loss-optimization", "learningObject": "loss-optimization.v2.json", "prerequisites": ["derivatives-gradients"], "relatedConcepts": ["error", "gradient-descent", "objective"] },
+    { "id": "data-features-targets", "learningObject": "data-features-targets.v2.json", "prerequisites": ["loss-optimization"], "relatedConcepts": ["dataset", "supervision", "data-quality"] },
+    { "id": "linear-regression", "learningObject": "linear-regression.v2.json", "prerequisites": ["data-features-targets"], "relatedConcepts": ["prediction", "best-fit-line", "machine-learning"] }
+  ]
 }

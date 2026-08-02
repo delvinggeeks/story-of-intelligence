@@ -1,0 +1,25 @@
+{
+  "id": "data-features-targets", "version": "1.0.0", "title": "Data, Features, and Targets",
+  "scope": "Turn a real prediction question into trustworthy rows, features, targets, and train/test evidence.",
+  "beginnerEntry": "You understand vectors, matrices, statistics, loss, and why optimization needs examples.",
+  "knowledge": { "conceptId": "data-features-targets", "prerequisites": ["loss-optimization"], "relatedConcepts": ["dataset", "supervision", "data-quality"] },
+  "learning": {
+    "objectives": ["Define rows, features, and targets.", "Choose features available at prediction time.", "Identify leakage, missingness, and unit risks.", "Explain why train and test data are separated."],
+    "estimatedMinutes": 70,
+    "steps": [
+      { "kind": "observe", "prompt": "A house-price table contains area, bedrooms, neighborhood, sale price, and final appraisal. Which column could be a target, and which inputs would truly be available before sale?" },
+      { "kind": "wonder", "prompt": "Why can a model score perfectly in development yet fail when a feature secretly contains future information?" },
+      { "kind": "predict", "prompt": "Predict the effect of mixing square feet with square meters, filling missing income with zero, or testing on the same rows used for training." },
+      { "kind": "explain", "prompt": "Supervised data pairs feature vectors X with targets y. Reliable evaluation separates unseen test examples and prevents leakage from target or future information." },
+      { "kind": "apply", "prompt": "You want to guess tomorrow's commute time. List what you know tonight: weather forecast, day of week, departure time. Those are features; tomorrow's actual minutes are the target. Name one thing you would only know after arriving, and explain why using it would be cheating." },
+      { "kind": "observe", "prompt": "A hospital model predicted pneumonia risk almost perfectly in testing. One feature was which ward the patient was already assigned to, recorded after diagnosis. The model had learned to read the answer key, not the patient." },
+      { "kind": "wonder", "prompt": "A student who memorizes past exam papers aces those exact papers and fails a fresh one. What is the data-science equivalent, and what does a held-out test set have in common with a fresh exam?" },
+      { "kind": "predict", "prompt": "Ten rows are split 8 for training and 2 for testing. Predict what happens to trust in the test score if the 2 test rows are duplicates of training rows, and if the model sees the test rows during feature tuning." },
+      { "kind": "explain", "prompt": "Engineers treat data as a contract: every feature must exist at prediction time with stable units, missing values need an explicit declared rule, and the test set stays untouched until the end. Most real ML failures are data failures, not algorithm failures." },
+      { "kind": "apply", "prompt": "Design a tiny dataset predicting exam score from practice hours: define the row, features, target, units, missing-value rule, and a train/test split. Notice that everything is now in place, features X, target y, a loss to minimize, and gradients to follow. The next lesson assembles all of it into your first machine-learning model." }
+    ]
+  },
+  "measurement": { "prePrompt": "Explain what data a prediction system needs and how you would know its evaluation is fair.", "postPrompt": "For a concrete prediction task, define X and y, reject one leaking feature, specify units and missing-value handling, and create a defensible train/test split.", "successCriteria": ["Defines one observation per row.", "Separates features from target.", "Uses only prediction-time information.", "Names a concrete data-quality guardrail.", "Explains unseen test evaluation."] },
+  "reasoning": { "misconceptions": ["More columns always improve a model.", "A target-derived feature is acceptable if it boosts score.", "Missing values are always zeros.", "Training performance proves generalization."], "tutorGuidance": "Anchor every column to when and how it is measured. Ask whether it exists at prediction time, whether its unit is stable, and whether the evaluation rows influenced training." },
+  "provenance": { "source": "ADR-0002 staged curriculum derived from the Academy source vision.", "status": "validated" }
+}

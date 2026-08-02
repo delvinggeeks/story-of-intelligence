@@ -27,15 +27,31 @@ function validate(value, rule, location = "$") {
     if (typeof value !== "string") return errors.push(`${location} must be a string`);
     if (rule.minLength && value.length < rule.minLength) errors.push(`${location} is too short`);
     if (rule.pattern && !(new RegExp(rule.pattern).test(value))) errors.push(`${location} does not match its required pattern`);
-  } else if (rule.type === "integer" && (!Number.isInteger(value) || (rule.minimum !== undefined && value < rule.minimum))) {
-    errors.push(`${location} must be an integer meeting its minimum`);
+  } else if (rule.type === "integer" && (!Number.isInteger(value) || (rule.minimum !== undefined && value < rule.minimum) || (rule.maximum !== undefined && value > rule.maximum))) {
+    errors.push(`${location} must be an integer within its allowed range`);
   }
   if (rule.enum && !rule.enum.includes(value)) errors.push(`${location} is not an allowed value`);
 }
 
 validate(object, schema);
 if (object.knowledge?.conceptId !== object.id) errors.push("knowledge.conceptId must equal id");
-const expectedSteps = ["observe", "wonder", "predict", "explain", "apply"];
+const isV2 = typeof object.version === "string" && object.version.startsWith("2.");
+const expectedSteps = isV2
+  ? ["observe", "wonder", "predict", "experiment", "fail", "discover", "explain", "apply"]
+  : ["observe", "wonder", "predict", "explain", "apply"];
 for (const step of expectedSteps) if (!object.learning?.steps?.some((item) => item.kind === step)) errors.push(`missing learning step: ${step}`);
+if (isV2) {
+  const experimentIds = new Set((object.learning?.experiments ?? []).map((experiment) => experiment.id));
+  for (const [index, step] of (object.learning?.steps ?? []).entries()) {
+    if (step.kind === "experiment" && !experimentIds.has(step.experimentId)) {
+      errors.push(`steps[${index}] experiment step must reference a declared experimentId`);
+    }
+  }
+  const referenced = new Set((object.learning?.steps ?? []).filter((step) => step.kind === "experiment").map((step) => step.experimentId));
+  for (const id of experimentIds) if (!referenced.has(id)) errors.push(`experiment ${id} is never reached by an experiment step`);
+  for (const check of object.measurement?.masteryRubric?.checks ?? []) {
+    try { new RegExp(check.pattern, "i"); } catch { errors.push(`masteryRubric check ${check.id} has an invalid pattern`); }
+  }
+}
 if (errors.length) throw new Error(`LOS validation failed:\n- ${errors.join("\n- ")}`);
 console.log(`LOS validation passed: ${object.id} v${object.version}`);

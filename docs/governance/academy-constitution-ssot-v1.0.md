@@ -1,7 +1,7 @@
 # Academy Constitution SSOT v1.0
 
 **Project:** Story of Intelligence Academy  
-**Status:** Authoritative baseline  
+**Status:** Superseded by Academy Constitution SSOT v1.1 under ADR-0002  
 **Architecture:** Educational Domain Model (EDM) v1.0 — frozen  
 **Governance:** ADR-based  
 **Project state:** State 2 — Implementation  

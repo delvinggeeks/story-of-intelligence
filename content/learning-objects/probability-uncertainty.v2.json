@@ -1,0 +1,170 @@
+{
+  "id": "probability-uncertainty",
+  "version": "2.0.0",
+  "title": "Probability and Uncertainty",
+  "scope": "Quantify uncertainty, reason about events, and update beliefs without confusing probability with certainty.",
+  "stability": "timeless",
+  "beginnerEntry": "You can work with fractions, ordered data, and simple functions.",
+  "nextConcept": "statistics-distributions",
+  "knowledge": {
+    "conceptId": "probability-uncertainty",
+    "prerequisites": [
+      "matrices-transformations"
+    ],
+    "relatedConcepts": [
+      "events",
+      "chance",
+      "conditional-probability"
+    ],
+    "history": "In 1654 Pascal and Fermat exchanged letters about how to split the pot of an interrupted gambling game — and accidentally founded the mathematics of uncertainty. Every spam filter, weather forecast, and language-model token today is scored on their 0-to-1 scale.",
+    "mentalModels": [
+      {
+        "name": "Long-run frequency",
+        "description": "A probability is what fraction of the time an outcome happens if you could repeat the situation endlessly. One trial proves nothing; the long run reveals the number."
+      },
+      {
+        "name": "Belief meter from 0 to 1",
+        "description": "Probability is a calibrated dial for confidence: 0 means impossible, 1 means certain, and everything interesting lives in between — with rules for updating the dial as evidence arrives."
+      }
+    ],
+    "analogies": [
+      {
+        "analogy": "A weather forecast saying 30% rain — neither promise nor denial",
+        "strength": 5,
+        "whenToUse": "When explaining what a single probability actually claims."
+      },
+      {
+        "analogy": "A fair die versus a loaded die: same faces, different long-run behavior",
+        "strength": 4,
+        "whenToUse": "When separating outcomes from their likelihoods."
+      }
+    ]
+  },
+  "learning": {
+    "objectives": [
+      "Define outcomes and events.",
+      "Estimate probability from assumptions or observations.",
+      "Distinguish independent and conditional events.",
+      "Interpret model probabilities as uncertainty statements."
+    ],
+    "estimatedMinutes": 80,
+    "steps": [
+      {
+        "kind": "observe",
+        "prompt": "A bag contains 3 blue and 1 red token. List possible outcomes for one draw and compare theoretical chance with what ten real draws might show."
+      },
+      {
+        "kind": "wonder",
+        "prompt": "Why can a 75 percent event fail on the next trial, and why does that not automatically make the probability wrong?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Predict how the chance of blue changes after drawing a blue token without replacement, and explain what new information caused the update."
+      },
+      {
+        "kind": "experiment",
+        "experimentId": "two-dice-histogram",
+        "prompt": "Play the dice experiment above: roll once and note the sum, then roll 100 times repeatedly. When does the histogram start looking stable, and which sum dominates?"
+      },
+      {
+        "kind": "fail",
+        "prompt": "Break it: try to predict the exact sum of the next single roll from the histogram. You cannot — explain the difference between predicting one outcome and predicting the pattern of many."
+      },
+      {
+        "kind": "discover",
+        "prompt": "State your discovery: randomness in single events coexists with stable structure in aggregates, and probability is the mathematics of that structure — six ways to make 7, one way to make 2."
+      },
+      {
+        "kind": "explain",
+        "prompt": "Probability assigns a number from 0 to 1 to uncertainty under stated assumptions. Conditional probability updates the event space after information is known."
+      },
+      {
+        "kind": "apply",
+        "prompt": "Tomorrow's forecast says 30 percent rain. Explain what that number promises and what it does not, decide whether to carry an umbrella and why, and name one more everyday number that is a probability in disguise: delivery windows, medical risk, sports odds."
+      },
+      {
+        "kind": "observe",
+        "prompt": "A spam filter marks an email 92 percent spam; a weather model says 70 percent rain; a language model ranks possible next words by chance. Modern software rarely answers yes or no. It reports uncertainty."
+      },
+      {
+        "kind": "wonder",
+        "prompt": "Why would a model that outputs honest probabilities be more useful to act on than one that always answers with false confidence, even when both are right equally often?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "In 100 emails, 40 are spam; 30 of those 40 contain the word free; 10 of the 60 legitimate emails also contain free. Before computing anything, predict which is larger: P(free given spam) or P(spam given free)."
+      },
+      {
+        "kind": "explain",
+        "prompt": "Classifiers estimate P(label given evidence). Confusing it with P(evidence given label) is the classic inversion error. A threshold turns a probability into a decision, and the right threshold depends on the cost of each kind of mistake."
+      },
+      {
+        "kind": "apply",
+        "prompt": "Using the email counts above, estimate P(spam) and P(free given spam), then explain in words why P(spam given free) asks a different question. Notice the limitation: one event's chance is not enough. Real datasets hold thousands of observations whose overall shape must be summarized. That is statistics and distributions."
+      }
+    ],
+    "experiments": [
+      {
+        "id": "two-dice-histogram",
+        "type": "dice-histogram",
+        "title": "Roll two dice, watch order emerge",
+        "instructions": "Roll two dice once, then a hundred times. Chaos in single rolls becomes a predictable shape in bulk — sum 7 is the tallest bar for a countable reason.",
+        "config": {}
+      }
+    ]
+  },
+  "measurement": {
+    "prePrompt": "Explain what a 70 percent chance means and whether it guarantees the next outcome.",
+    "postPrompt": "Given a documented set of outcomes, compute an event probability, update it after new information, and state every assumption and limitation.",
+    "successCriteria": [
+      "Defines the outcome space.",
+      "Computes a valid probability.",
+      "Avoids interpreting probability as certainty.",
+      "Explains a conditional update.",
+      "Connects uncertainty to a model decision threshold."
+    ],
+    "masteryRubric": {
+      "threshold": 3,
+      "checks": [
+        {
+          "id": "uncertainty",
+          "label": "Describe uncertainty, chance, or likelihood.",
+          "pattern": "(uncertain|chance|random|likel|probab)"
+        },
+        {
+          "id": "scale",
+          "label": "Use the 0-to-1 or percentage scale correctly.",
+          "pattern": "(zero|one|0|1|percent|%|fraction)"
+        },
+        {
+          "id": "evidence",
+          "label": "Ground probability in repeated trials or data.",
+          "pattern": "(frequen|trials?|repeat|long run|many|data)"
+        },
+        {
+          "id": "conditional",
+          "label": "Note that probabilities depend on conditions or context.",
+          "pattern": "(condition|given|depends|context|update)"
+        },
+        {
+          "id": "application",
+          "label": "Connect probability to risk, prediction, or model confidence.",
+          "pattern": "(risk|predict|model|decision|confidence|use)"
+        }
+      ]
+    }
+  },
+  "reasoning": {
+    "misconceptions": [
+      "High probability guarantees an outcome.",
+      "Small samples must match theoretical frequencies.",
+      "P(A given B) equals P(B given A).",
+      "A probability is meaningful without assumptions or a population."
+    ],
+    "tutorGuidance": "Ask for the outcome space, event, denominator, and information currently known. Use frequencies before notation and contrast forecast calibration with single-event certainty."
+  },
+  "provenance": {
+    "source": "ADR-0002 staged curriculum derived from the Academy source vision. Migrated to LOS v2.0 under ADR-0003/0004/0005.",
+    "status": "validated"
+  }
+}

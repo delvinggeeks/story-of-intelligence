@@ -1,0 +1,173 @@
+{
+  "id": "statistics-distributions",
+  "version": "2.0.0",
+  "title": "Statistics and Distributions",
+  "scope": "Summarize data, measure spread, and reason from samples without hiding important variation.",
+  "stability": "timeless",
+  "beginnerEntry": "You understand events, probability, and ordered numeric observations.",
+  "nextConcept": "derivatives-gradients",
+  "knowledge": {
+    "conceptId": "statistics-distributions",
+    "prerequisites": [
+      "probability-uncertainty"
+    ],
+    "relatedConcepts": [
+      "mean",
+      "variance",
+      "sampling"
+    ],
+    "history": "Quetelet applied astronomy's error curves to people in the 1830s, Galton mapped variation, and Fisher built the machinery of sampling in the 1920s. Their central discovery — that honest summaries of messy data are possible — is the entire reason machine learning generalizes from a sample to the world.",
+    "mentalModels": [
+      {
+        "name": "Summary as compression",
+        "description": "A mean or variance is lossy compression of many values into few. Compression is powerful and dangerous: it enables decisions and hides individuals, so you must know what was thrown away."
+      },
+      {
+        "name": "A spoonful of the soup",
+        "description": "A sample is one spoonful used to judge the whole pot. It works only if the pot is stirred — a biased sample is an unstirred pot, and no amount of mathematics fixes it."
+      }
+    ],
+    "analogies": [
+      {
+        "analogy": "Tasting one stirred spoonful to season an entire pot of soup",
+        "strength": 5,
+        "whenToUse": "When introducing sampling and representativeness."
+      },
+      {
+        "analogy": "A class average of 75 hiding scores of 40 and 100",
+        "strength": 4,
+        "whenToUse": "When showing that centers without spread mislead."
+      }
+    ]
+  },
+  "learning": {
+    "objectives": [
+      "Compute and interpret center and spread.",
+      "Recognize distribution shape and outliers.",
+      "Distinguish sample from population.",
+      "Connect statistics to data preparation and model evaluation."
+    ],
+    "estimatedMinutes": 85,
+    "steps": [
+      {
+        "kind": "observe",
+        "prompt": "Compare datasets [5,5,5,5,5] and [1,3,5,7,9]. They share a mean. What crucial information does the mean hide?"
+      },
+      {
+        "kind": "wonder",
+        "prompt": "Why might median be safer than mean for incomes, and what does spread add to a claim about a typical value?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Predict how adding one value of 100 changes the mean, median, range, and overall shape of [1,2,3,4,5]."
+      },
+      {
+        "kind": "experiment",
+        "experimentId": "sample-means-converge",
+        "prompt": "Play the sampling experiment above: draw one sample, then twenty. How far can a single sample mean stray from the green line, and what happens to the running average as samples accumulate?"
+      },
+      {
+        "kind": "fail",
+        "prompt": "Break it: suppose your sampling only ever reached the low values in the population (an unstirred pot). Explain why every summary computed from it would be confidently wrong."
+      },
+      {
+        "kind": "discover",
+        "prompt": "State your discovery: statistics trades individuals for patterns — a fair sample plus center-and-spread summaries lets a small dataset speak for a large world, and a biased sample lies at scale."
+      },
+      {
+        "kind": "explain",
+        "prompt": "A distribution records how values occur. Center summarizes location; variance or standard deviation summarizes spread; samples estimate a larger population with uncertainty."
+      },
+      {
+        "kind": "apply",
+        "prompt": "Five friends report commute times [20, 25, 25, 30, 90]. Compute mean and median, decide which honestly describes a typical commute, and explain what the 90 is doing to the average. Find one average quoted around you this week and ask what it hides."
+      },
+      {
+        "kind": "observe",
+        "prompt": "A product page shows 4.2 stars. Behind it, one product has mostly 4s and 5s; another has half 5s and half 1s. Same average, opposite stories. The distribution, not the summary, is the truth."
+      },
+      {
+        "kind": "wonder",
+        "prompt": "A model is trained on data collected only from weekday daytime users. What can it honestly claim about weekend night users, and why does no amount of data volume fix a biased sample?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Sensor readings cluster near 50 with a few spikes at 500. Predict how the spikes distort the mean, which summary a monitoring dashboard should show, and what a model trained on raw values might wrongly learn."
+      },
+      {
+        "kind": "explain",
+        "prompt": "Data preparation is applied statistics: distributions reveal outliers and skew before training, feature scaling uses mean and standard deviation, and evaluation compares distributions of errors, never a single flattering number."
+      },
+      {
+        "kind": "apply",
+        "prompt": "Summarize [2,3,3,4,8] with mean, median, and range, describe its shape in words, and name one sampling risk if these were training rows. Notice the limitation: statistics describes data that already exists, but prediction needs to know how one quantity responds when another moves. That is the derivative."
+      }
+    ],
+    "experiments": [
+      {
+        "id": "sample-means-converge",
+        "type": "sampling-mean",
+        "title": "Watch sample means settle",
+        "instructions": "Draw samples of 10 from a messy, skewed population. Single samples wobble, but the average of the sample means homes in on the true mean — the law of large numbers, live.",
+        "config": {
+          "trueMean": 52,
+          "sampleSize": 10
+        }
+      }
+    ]
+  },
+  "measurement": {
+    "prePrompt": "Describe how you would summarize a list of measurements and what might be lost in one average.",
+    "postPrompt": "Compare two datasets with the same mean but different spread, choose useful summaries, identify an outlier, and explain a sample-to-population risk.",
+    "successCriteria": [
+      "Computes center correctly.",
+      "Describes spread and shape.",
+      "Explains outlier influence.",
+      "Distinguishes sample and population.",
+      "Connects summary choices to a data or model decision."
+    ],
+    "masteryRubric": {
+      "threshold": 3,
+      "checks": [
+        {
+          "id": "center",
+          "label": "Reference a center such as mean or median.",
+          "pattern": "(mean|average|median|center)"
+        },
+        {
+          "id": "spread",
+          "label": "Reference spread such as variance or deviation.",
+          "pattern": "(variance|spread|deviation|range|wobble|vary)"
+        },
+        {
+          "id": "sample",
+          "label": "Distinguish sample from population.",
+          "pattern": "(sample|population|subset|draw|represent)"
+        },
+        {
+          "id": "distribution",
+          "label": "Describe distribution shape or histogram.",
+          "pattern": "(distribution|histogram|shape|skew|normal|bell)"
+        },
+        {
+          "id": "application",
+          "label": "Connect statistics to estimation, bias, or decisions.",
+          "pattern": "(data|model|estimate|decision|bias|use)"
+        }
+      ]
+    }
+  },
+  "reasoning": {
+    "misconceptions": [
+      "The mean fully describes data.",
+      "Outliers should always be deleted.",
+      "A large sample is automatically representative.",
+      "Correlation summaries prove causation."
+    ],
+    "tutorGuidance": "Have the learner compare raw values or a simple number line before calculating. Ask what each summary preserves, what it hides, and how collection choices could bias the sample."
+  },
+  "provenance": {
+    "source": "ADR-0002 staged curriculum derived from the Academy source vision. Migrated to LOS v2.0 under ADR-0003/0004/0005.",
+    "status": "validated"
+  }
+}

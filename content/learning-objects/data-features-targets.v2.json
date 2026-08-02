@@ -1,0 +1,170 @@
+{
+  "id": "data-features-targets",
+  "version": "2.0.0",
+  "title": "Data, Features, and Targets",
+  "scope": "Turn a real prediction question into trustworthy rows, features, targets, and train/test evidence.",
+  "stability": "mostly-timeless",
+  "beginnerEntry": "You understand vectors, matrices, statistics, loss, and why optimization needs examples.",
+  "nextConcept": "linear-regression",
+  "knowledge": {
+    "conceptId": "data-features-targets",
+    "prerequisites": [
+      "loss-optimization"
+    ],
+    "relatedConcepts": [
+      "dataset",
+      "supervision",
+      "data-quality"
+    ],
+    "history": "Statisticians spent a century learning that conclusions inherit the flaws of their data, and early computing coined 'garbage in, garbage out' in the 1950s. Machine learning made the lesson existential: a model is compressed data, so corrupted or biased data becomes a corrupted or biased model.",
+    "mentalModels": [
+      {
+        "name": "Fuel of learning",
+        "description": "Data is the fuel and the model is the engine. No engine design compensates for contaminated fuel, and the most reliable way to improve a model is to improve its data."
+      },
+      {
+        "name": "Features are questions",
+        "description": "Each feature column is a question asked of every example. Choosing features is choosing which questions get asked — leave out the important question and no model can answer it."
+      }
+    ],
+    "analogies": [
+      {
+        "analogy": "Ingredients decide the dish more than the recipe does",
+        "strength": 5,
+        "whenToUse": "When arguing that data quality dominates model choice."
+      },
+      {
+        "analogy": "A job application form: the fields are features, the hiring decision is the target",
+        "strength": 4,
+        "whenToUse": "When defining features versus targets on a familiar object."
+      }
+    ]
+  },
+  "learning": {
+    "objectives": [
+      "Define rows, features, and targets.",
+      "Choose features available at prediction time.",
+      "Identify leakage, missingness, and unit risks.",
+      "Explain why train and test data are separated."
+    ],
+    "estimatedMinutes": 85,
+    "steps": [
+      {
+        "kind": "observe",
+        "prompt": "A house-price table contains area, bedrooms, neighborhood, sale price, and final appraisal. Which column could be a target, and which inputs would truly be available before sale?"
+      },
+      {
+        "kind": "wonder",
+        "prompt": "Why can a model score perfectly in development yet fail when a feature secretly contains future information?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Predict the effect of mixing square feet with square meters, filling missing income with zero, or testing on the same rows used for training."
+      },
+      {
+        "kind": "experiment",
+        "experimentId": "corrupted-point-fit",
+        "prompt": "Play the corrupted-point experiment above: toggle the bad row in and out several times. How much does the slope move, and would you have noticed the corruption in a table of ten thousand rows?"
+      },
+      {
+        "kind": "fail",
+        "prompt": "Break it: imagine the corrupted value passed silently into training. Trace the damage: wrong slope, wrong predictions, wrong decisions. Name the check that would have caught it at ingestion."
+      },
+      {
+        "kind": "discover",
+        "prompt": "State your discovery: a model is only a summary of its training rows, so one undetected corrupt row — or a systematically biased sample — is transmitted straight into every prediction."
+      },
+      {
+        "kind": "explain",
+        "prompt": "Supervised data pairs feature vectors X with targets y. Reliable evaluation separates unseen test examples and prevents leakage from target or future information."
+      },
+      {
+        "kind": "apply",
+        "prompt": "You want to guess tomorrow's commute time. List what you know tonight: weather forecast, day of week, departure time. Those are features; tomorrow's actual minutes are the target. Name one thing you would only know after arriving, and explain why using it would be cheating."
+      },
+      {
+        "kind": "observe",
+        "prompt": "A hospital model predicted pneumonia risk almost perfectly in testing. One feature was which ward the patient was already assigned to, recorded after diagnosis. The model had learned to read the answer key, not the patient."
+      },
+      {
+        "kind": "wonder",
+        "prompt": "A student who memorizes past exam papers aces those exact papers and fails a fresh one. What is the data-science equivalent, and what does a held-out test set have in common with a fresh exam?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Ten rows are split 8 for training and 2 for testing. Predict what happens to trust in the test score if the 2 test rows are duplicates of training rows, and if the model sees the test rows during feature tuning."
+      },
+      {
+        "kind": "explain",
+        "prompt": "Engineers treat data as a contract: every feature must exist at prediction time with stable units, missing values need an explicit declared rule, and the test set stays untouched until the end. Most real ML failures are data failures, not algorithm failures."
+      },
+      {
+        "kind": "apply",
+        "prompt": "Design a tiny dataset predicting exam score from practice hours: define the row, features, target, units, missing-value rule, and a train/test split. Notice that everything is now in place, features X, target y, a loss to minimize, and gradients to follow. The next lesson assembles all of it into your first machine-learning model."
+      }
+    ],
+    "experiments": [
+      {
+        "id": "corrupted-point-fit",
+        "type": "outlier-fit",
+        "title": "One bad row bends the model",
+        "instructions": "A clean dataset with a clear trend — and one corrupted point where a value was logged in the wrong unit. Toggle it in and out and watch the fitted line lurch.",
+        "config": {}
+      }
+    ]
+  },
+  "measurement": {
+    "prePrompt": "Explain what data a prediction system needs and how you would know its evaluation is fair.",
+    "postPrompt": "For a concrete prediction task, define X and y, reject one leaking feature, specify units and missing-value handling, and create a defensible train/test split.",
+    "successCriteria": [
+      "Defines one observation per row.",
+      "Separates features from target.",
+      "Uses only prediction-time information.",
+      "Names a concrete data-quality guardrail.",
+      "Explains unseen test evaluation."
+    ],
+    "masteryRubric": {
+      "threshold": 3,
+      "checks": [
+        {
+          "id": "features",
+          "label": "Identify features as model inputs.",
+          "pattern": "(feature|input|column|attribute|signal)"
+        },
+        {
+          "id": "target",
+          "label": "Identify the target or label being predicted.",
+          "pattern": "(target|label|output|answer|supervis|predict)"
+        },
+        {
+          "id": "quality",
+          "label": "Name a data-quality failure mode.",
+          "pattern": "(quality|clean|missing|outlier|corrupt|garbage|wrong unit)"
+        },
+        {
+          "id": "representative",
+          "label": "Reason about representativeness or bias.",
+          "pattern": "(representative|bias|sample|coverage|distribution)"
+        },
+        {
+          "id": "application",
+          "label": "Connect data quality to a check or pipeline guardrail.",
+          "pattern": "(model|train|pipeline|check|validate|guardrail|use)"
+        }
+      ]
+    }
+  },
+  "reasoning": {
+    "misconceptions": [
+      "More columns always improve a model.",
+      "A target-derived feature is acceptable if it boosts score.",
+      "Missing values are always zeros.",
+      "Training performance proves generalization."
+    ],
+    "tutorGuidance": "Anchor every column to when and how it is measured. Ask whether it exists at prediction time, whether its unit is stable, and whether the evaluation rows influenced training."
+  },
+  "provenance": {
+    "source": "ADR-0002 staged curriculum derived from the Academy source vision. Migrated to LOS v2.0 under ADR-0003/0004/0005.",
+    "status": "validated"
+  }
+}

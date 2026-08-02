@@ -1,0 +1,25 @@
+{
+  "id": "statistics-distributions", "version": "1.0.0", "title": "Statistics and Distributions",
+  "scope": "Summarize data, measure spread, and reason from samples without hiding important variation.",
+  "beginnerEntry": "You understand events, probability, and ordered numeric observations.",
+  "knowledge": { "conceptId": "statistics-distributions", "prerequisites": ["probability-uncertainty"], "relatedConcepts": ["mean", "variance", "sampling"] },
+  "learning": {
+    "objectives": ["Compute and interpret center and spread.", "Recognize distribution shape and outliers.", "Distinguish sample from population.", "Connect statistics to data preparation and model evaluation."],
+    "estimatedMinutes": 70,
+    "steps": [
+      { "kind": "observe", "prompt": "Compare datasets [5,5,5,5,5] and [1,3,5,7,9]. They share a mean. What crucial information does the mean hide?" },
+      { "kind": "wonder", "prompt": "Why might median be safer than mean for incomes, and what does spread add to a claim about a typical value?" },
+      { "kind": "predict", "prompt": "Predict how adding one value of 100 changes the mean, median, range, and overall shape of [1,2,3,4,5]." },
+      { "kind": "explain", "prompt": "A distribution records how values occur. Center summarizes location; variance or standard deviation summarizes spread; samples estimate a larger population with uncertainty." },
+      { "kind": "apply", "prompt": "Five friends report commute times [20, 25, 25, 30, 90]. Compute mean and median, decide which honestly describes a typical commute, and explain what the 90 is doing to the average. Find one average quoted around you this week and ask what it hides." },
+      { "kind": "observe", "prompt": "A product page shows 4.2 stars. Behind it, one product has mostly 4s and 5s; another has half 5s and half 1s. Same average, opposite stories. The distribution, not the summary, is the truth." },
+      { "kind": "wonder", "prompt": "A model is trained on data collected only from weekday daytime users. What can it honestly claim about weekend night users, and why does no amount of data volume fix a biased sample?" },
+      { "kind": "predict", "prompt": "Sensor readings cluster near 50 with a few spikes at 500. Predict how the spikes distort the mean, which summary a monitoring dashboard should show, and what a model trained on raw values might wrongly learn." },
+      { "kind": "explain", "prompt": "Data preparation is applied statistics: distributions reveal outliers and skew before training, feature scaling uses mean and standard deviation, and evaluation compares distributions of errors, never a single flattering number." },
+      { "kind": "apply", "prompt": "Summarize [2,3,3,4,8] with mean, median, and range, describe its shape in words, and name one sampling risk if these were training rows. Notice the limitation: statistics describes data that already exists, but prediction needs to know how one quantity responds when another moves. That is the derivative." }
+    ]
+  },
+  "measurement": { "prePrompt": "Describe how you would summarize a list of measurements and what might be lost in one average.", "postPrompt": "Compare two datasets with the same mean but different spread, choose useful summaries, identify an outlier, and explain a sample-to-population risk.", "successCriteria": ["Computes center correctly.", "Describes spread and shape.", "Explains outlier influence.", "Distinguishes sample and population.", "Connects summary choices to a data or model decision."] },
+  "reasoning": { "misconceptions": ["The mean fully describes data.", "Outliers should always be deleted.", "A large sample is automatically representative.", "Correlation summaries prove causation."], "tutorGuidance": "Have the learner compare raw values or a simple number line before calculating. Ask what each summary preserves, what it hides, and how collection choices could bias the sample." },
+  "provenance": { "source": "ADR-0002 staged curriculum derived from the Academy source vision.", "status": "validated" }
+}

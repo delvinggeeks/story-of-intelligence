@@ -7,7 +7,11 @@ button, textarea { font: inherit; }
 .eyebrow, .step-kind { color: #30715b; font-size: .8rem; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
 h1 { font-family: Georgia, serif; font-size: clamp(3rem, 10vw, 5.75rem); line-height: .95; margin: .4rem 0 1rem; }
 h2 { font-family: Georgia, serif; font-size: clamp(1.8rem, 5vw, 2.5rem); line-height: 1.1; }
+h3 { font-family: Georgia, serif; font-size: 1.2rem; line-height: 1.2; margin: 0 0 .4rem; }
 .lead { font-size: 1.2rem; max-width: 62ch; }
+.top-actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1rem; }
+.top-actions a { color: #1e5342; font-weight: 650; text-decoration: none; border: 1px solid #30715b; border-radius: .45rem; padding: .35rem .65rem; background: #f4fbf6; }
+.top-actions a:hover { background: #e7f5ec; }
 .metadata { display: grid; grid-template-columns: 1fr 2fr; gap: .6rem 1.5rem; margin: 2rem 0 0; font-size: .92rem; }
 .metadata div { display: contents; }
 .metadata dt { color: #50635a; font-weight: 700; }
@@ -22,10 +26,28 @@ h2 { font-family: Georgia, serif; font-size: clamp(1.8rem, 5vw, 2.5rem); line-he
 .step-prompt { font-size: 1.15rem; min-height: 5rem; }
 label { display: block; margin: 2rem 0 .5rem; font-weight: 700; }
 textarea { width: 100%; resize: vertical; padding: .8rem; border: 1px solid #a9b9ae; border-radius: .5rem; background: #fff; color: inherit; }
+.coach { margin-top: 1rem; border: 1px solid #bfd3c5; background: #f7fcf8; border-radius: .6rem; padding: .9rem; }
+.coach p { margin: 0 0 .7rem; color: #2a4438; }
+.coach-checks { margin: 0; padding-left: 1.1rem; display: grid; gap: .35rem; }
+.coach-checks li { color: #355247; }
+.coach-checks li.pass { color: #1f5a45; font-weight: 650; }
+.coach-checks li.pass::marker { content: "✓ "; }
+.coach-checks li.pending::marker { content: "○ "; }
 .controls { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; }
 .controls button { border: 1px solid #30715b; border-radius: .4rem; padding: .65rem 1rem; background: transparent; color: #1e5342; cursor: pointer; }
 .controls #next { background: #1e5342; color: #fff; }
 button:disabled { cursor: not-allowed; opacity: .45; }
 .support { margin-top: 1.5rem; background: #e5f0e8; }
 .support h2 { margin-top: 0; font-size: 1.45rem; }
+.experiment-region { margin: 1rem 0; }
+.experiment-frame { border: 1px solid #bfd3c5; background: #f7fcf8; border-radius: .6rem; padding: 1rem; display: grid; gap: .7rem; }
+.experiment-title { margin: 0; font-size: 1.15rem; color: #1e5342; }
+.experiment-instructions { margin: 0; color: #2a4438; }
+.experiment-canvas { width: 100%; max-width: 480px; background: #fff; border: 1px solid #d7e4da; border-radius: .5rem; touch-action: none; }
+.experiment-slider { display: grid; grid-template-columns: minmax(90px, auto) 1fr 3.5rem; align-items: center; gap: .6rem; }
+.experiment-slider-label { font-weight: 650; color: #1e5342; }
+.experiment-slider-value { font-variant-numeric: tabular-nums; color: #2a4438; }
+.experiment-button { justify-self: start; border: 1px solid #30715b; border-radius: .4rem; padding: .5rem .9rem; background: #1e5342; color: #fff; cursor: pointer; }
+.experiment-readout { margin: 0; padding: .6rem .8rem; background: #eef6f0; border-left: 3px solid #1e5342; border-radius: .3rem; color: #17382c; }
+.mastery-feedback { margin-top: .8rem; padding: .7rem .9rem; border-radius: .5rem; background: #fdf3e7; border: 1px solid #e3c39a; color: #6b4310; }
 @media (max-width: 480px) { .shell { padding-top: 2rem; } .metadata { grid-template-columns: 1fr; gap: .1rem; } .metadata dd { margin-bottom: .8rem; } }

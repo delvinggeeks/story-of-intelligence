@@ -4,12 +4,12 @@
 
 Act as an evidence-oriented technical educator and implementation reviewer. Teach the reasoning behind a change, but keep production artifacts concise and reviewable.
 
-The Academy Constitution is authoritative: `docs/governance/academy-constitution-ssot-v1.0.md`.
+The Academy Constitution is authoritative: `docs/governance/academy-constitution-ssot-v1.1.md`.
 
 ## Non-negotiable guardrails
 
 - EDM v1.0 is frozen. Do not rename, add, remove, or reinterpret an EDM model without an ADR.
-- The current product scope is one end-to-end **Numbers** vertical slice. Do not propose additional subjects, renderers, agents, enterprise infrastructure, or premature optimization.
+- The current product scope is the ADR-0002 learning path from **Numbers** through **linear regression from scratch**. Do not expand beyond that path or add renderers, agents, enterprise infrastructure, or premature optimization.
 - Preserve beginner perspective: explain concepts before relying on expert shorthand.
 - Prefer the smallest verifiable change. Do not add dependencies or scaffolding unless the current acceptance criteria require them.
 - Distinguish facts, assumptions, hypotheses, decisions, and evidence. Record an unresolved hypothesis in `docs/governance/assumption-register.md`; record validated results in `docs/governance/evidence-register.md`.
@@ -23,6 +23,6 @@ The Academy Constitution is authoritative: `docs/governance/academy-constitution
 4. Run the available validation; never claim a check passed unless it ran.
 5. Summarize changed files, validation results, assumptions, and next smallest step.
 
-## Current Sprint 1 target
+## Current Sprint 2 target
 
-Implement and validate Learning Object Schema (LOS) v1.0 and one `Numbers` Learning Object. A completed increment must show that the object is structurally valid and carries the information required by the Knowledge Graph, Runtime, and Reasoning Model without changing EDM v1.0.
+Implement and validate the ADR-0002 curriculum through linear regression using LOS v1.0 and the existing renderer. A completed increment must preserve graph prerequisites, per-concept progress, mastery-gated dashboard navigation, Runtime and Reasoning compatibility, and frozen EDM v1.0.

@@ -1,0 +1,57 @@
+{
+  "id": "numbers",
+  "version": "1.0.0",
+  "title": "Numbers",
+  "scope": "An adult-friendly foundation for understanding how quantities become usable data in mathematics, software, and machine learning.",
+  "beginnerEntry": "No formal mathematics is assumed. You already make quantity judgments in everyday decisions, measurements, and comparisons.",
+  "knowledge": {
+    "conceptId": "numbers",
+    "prerequisites": [],
+    "relatedConcepts": ["counting", "quantity", "number-line"]
+  },
+  "learning": {
+    "objectives": [
+      "Explain that a number is a representation of quantity, not the quantity itself.",
+      "Identify the unit and context needed before any quantity comparison is meaningful.",
+      "Predict failure modes when units or definitions are inconsistent across data sources.",
+      "Apply quantity reasoning to everyday decisions and machine-learning data interpretation."
+    ],
+    "estimatedMinutes": 35,
+    "steps": [
+      { "kind": "observe", "prompt": "A dashboard reports 42 support tickets today and 57 yesterday. Before calculating anything, what does each number let you understand?" },
+      { "kind": "wonder", "prompt": "Why is a number more useful than the phrase 'many tickets'? What information becomes comparable once both values share a unit?" },
+      { "kind": "predict", "prompt": "Predict what fails if one report uses 'tickets' and another uses an undefined label such as 'high volume'." },
+      { "kind": "explain", "prompt": "A number represents quantity in a defined context. Without a shared unit and definition, the number is hard to compare, hard to store correctly, and unsafe to use for decisions." },
+      { "kind": "apply", "prompt": "You have 12 apples, 9 oranges, and 15 tasks. Which comparisons are valid and which are invalid? Explain your reasoning using quantity and unit." },
+      { "kind": "observe", "prompt": "A recipe says 2 cups of water; a nutrition label says 200 calories; a travel app says 8 km. What is common across all three numbers, and what is different?" },
+      { "kind": "wonder", "prompt": "Can two numbers be compared directly when they describe different units such as cups, calories, and kilometers? Why or why not?" },
+      { "kind": "predict", "prompt": "Predict the business risk if one data table stores revenue in dollars and another in thousands of dollars without marking that difference." },
+      { "kind": "explain", "prompt": "Numbers become reliable data only when quantity, unit, and meaning are explicit. This is why schema, column definitions, and metadata are critical in analytics and machine learning." },
+      { "kind": "apply", "prompt": "A model dataset has columns for age (years), income (USD), and session duration (minutes). Explain what each number means, where confusion could occur, and one check to prevent misuse." }
+    ]
+  },
+  "measurement": {
+    "prePrompt": "Before the lesson: Explain how you decide whether one metric is larger than another, and list what must be shared for the comparison to be valid.",
+    "postPrompt": "After the lesson: A pipeline reports 1,200 records in table A and 800 in table B. Explain what each number represents, compare them correctly, identify one possible misuse, and describe one guardrail.",
+    "successCriteria": [
+      "Learner states that a number represents quantity and distinguishes representation from the thing measured.",
+      "Learner identifies unit/context requirements before comparing values.",
+      "Learner performs a valid comparison and rejects at least one invalid comparison.",
+      "Learner names at least one failure mode from missing or inconsistent units.",
+      "Learner connects the result to a practical decision, data-quality check, or computational use."
+    ]
+  },
+  "reasoning": {
+    "misconceptions": [
+      "A number is the thing being measured rather than a representation of quantity.",
+      "Any two numbers can be compared directly even when their units differ.",
+      "A larger number is always better regardless of context or objective.",
+      "If values are in a table, their meaning is automatically trustworthy without metadata."
+    ],
+    "tutorGuidance": "Coach with three prompts: (1) What quantity is represented? (2) What is the unit/context? (3) What decision depends on this comparison? If confusion remains, use a daily-life example first, then map back to data columns and model inputs."
+  },
+  "provenance": {
+    "source": "Sprint 1 Numbers vertical slice, derived under Academy Constitution SSOT v1.0.",
+    "status": "validated"
+  }
+}

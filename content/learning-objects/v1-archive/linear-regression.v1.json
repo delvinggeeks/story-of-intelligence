@@ -1,0 +1,25 @@
+{
+  "id": "linear-regression", "version": "1.0.0", "title": "Linear Regression From Scratch",
+  "scope": "Build, train, and evaluate a one-feature linear-regression model using only arithmetic and gradient descent.",
+  "beginnerEntry": "You understand features and targets, linear functions, mean squared error, derivatives, and parameter updates.",
+  "knowledge": { "conceptId": "linear-regression", "prerequisites": ["data-features-targets"], "relatedConcepts": ["prediction", "best-fit-line", "machine-learning"] },
+  "learning": {
+    "objectives": ["Derive prediction y-hat = wx + b.", "Compute mean squared error for a dataset.", "Derive and apply gradients for w and b.", "Implement and evaluate training without an ML library."],
+    "estimatedMinutes": 90,
+    "steps": [
+      { "kind": "observe", "prompt": "Study pairs (hours, score): (1,2), (2,4), (3,6). Describe the simplest rule, then identify what slope and intercept mean in this context." },
+      { "kind": "wonder", "prompt": "When real points do not lie on one exact line, how can a machine choose w and b rather than guessing them?" },
+      { "kind": "predict", "prompt": "Start w = 0, b = 0. For x = 2, y = 4, predict y-hat, error, squared loss, and whether w should increase or decrease." },
+      { "kind": "explain", "prompt": "Linear regression predicts y-hat = wx + b, averages squared errors, and updates w and b opposite their loss gradients. Repeating this loop fits a line to training evidence." },
+      { "kind": "apply", "prompt": "By hand, run one full training step on (2, 4) and (3, 5) starting from w = 0, b = 0 with learning rate 0.1: predict both y-hats, compute both errors and the MSE, compute dw = mean(2x(y-hat - y)) and db = mean(2(y-hat - y)), and update w and b. Say aloud what just improved." },
+      { "kind": "observe", "prompt": "Every idea in this path is now on the table at once: numbers with units in each cell, features as vectors, the dataset as a matrix, error statistics, gradients for direction, and a loss to descend. Linear regression is where they assemble into one working machine." },
+      { "kind": "wonder", "prompt": "After hundreds of update loops the line stops moving. How would you convince a skeptic the machine actually learned something, rather than memorized its training rows? What role do the held-out test rows play?" },
+      { "kind": "predict", "prompt": "A line fits training data with low MSE. Predict what happens to test error when the true relationship curves, when one outlier row is corrupted, and when the model predicts far outside the range of x it ever saw." },
+      { "kind": "explain", "prompt": "Evaluation completes the loop: report MSE on unseen test rows, inspect residuals for leftover pattern, and refuse to extrapolate blindly. A fitted slope shows association, not causation. Every serious ML system, however large, still follows this predict-score-update-evaluate cycle." },
+      { "kind": "apply", "prompt": "Write from-scratch pseudocode: initialize w,b; loop over epochs; predict each y-hat; accumulate MSE gradients dw = mean(2x(y-hat-y)) and db = mean(2(y-hat-y)); update parameters; report test MSE and one residual limitation. You have built machine learning from raw numbers. The straight line is also your first wall: real patterns curve, and models that learn curves, neural networks, are the story's next chapter." }
+    ]
+  },
+  "measurement": { "prePrompt": "Describe how a line could make numeric predictions and how its parameters might improve from mistakes.", "postPrompt": "For a three-row dataset, calculate predictions and MSE, derive dw and db, perform one update, write the full training loop without an ML library, and explain test evaluation and limitations.", "successCriteria": ["Defines feature, target, slope, and intercept.", "Computes predictions and mean squared error.", "Derives or correctly applies both gradients.", "Updates parameters opposite the gradient.", "Provides a complete from-scratch loop and evaluates unseen data."] },
+  "reasoning": { "misconceptions": ["Linear regression requires a library to be machine learning.", "The best line must pass through every point.", "Lower training loss guarantees useful predictions.", "Correlation or fitted slope proves causation."], "tutorGuidance": "Trace one row through predict, compare, square, differentiate, and update. Keep w and b meanings visible. Require a held-out check and discussion of linearity, outliers, extrapolation, and non-causal interpretation." },
+  "provenance": { "source": "ADR-0002 staged curriculum derived from the Academy source vision.", "status": "validated" }
+}

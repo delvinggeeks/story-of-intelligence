@@ -2,4 +2,13 @@
 
 | ID | Assumption | Status | Validation plan |
 | --- | --- | --- | --- |
-| A-001 | A single LOS can express an introductory Numbers object while supplying the metadata needed by the Knowledge Graph, runtime, and tutor. | Open | Validate the `Numbers` object against LOS v1.0 and review the required integration fields. |
+| A-001 | A single LOS can express concepts from introductory Numbers through a first machine-learning model while supplying the metadata needed by the Knowledge Graph, runtime, and tutor. | Supported structurally and operationally by E-001, E-002, and E-009 | Collect learner evidence across the expanded path before treating pedagogical generality as validated. |
+| A-002 | The current pre/post assessment interaction can produce evidence-grade learner improvement signals. | Open | Run owner-observed pilot sessions and capture pre/post quality against success criteria rubric. |
+| A-003 | Content depth in the Numbers object is sufficient for beginner-first conceptual understanding and transfer. | Open | Use owner eye-test and first learner feedback to accept or refine depth level. |
+| A-004 | Minimal adaptive tutoring prompts improve learner progress over static hints alone. | Supported operationally by E-003; pedagogical effect open | Collect comparative learner outcomes with and without tutor use before closing. |
+| A-005 | The ten new Learning Objects provide sufficient beginner-first depth and dependency coverage through linear regression. | Open | Conduct owner eye-test and observed beginner sessions; score pre/post responses and revise weak lessons before closing. |
+| A-006 | One playable experiment per lesson is enough interactivity for the Experiment→Fail→Discover arc to produce productive failure. | Open | Owner eye-test plus learner observation; add second experiments where the fail step feels abstract. |
+| A-007 | Embedding mental models, analogies, and rubrics inside each Learning Object (rather than standalone libraries) is sufficient at 11 objects / 1 renderer. | Open | Re-evaluate for extraction into Knowledge Asset libraries when a second renderer or >20 objects exist. |
+| A-008 | Deterministic regex rubric scoring is a sufficient v1 proxy for mastery evidence. | Open (ADR-0005) | Compare rubric verdicts against owner judgment on real learner answers; consider LLM-backed scoring via a future ADR if precision is poor. |
+| A-009 | Untyped prerequisite edges remain sufficient for the current linear path; typed edges (REQUIRES/USES/ENABLES) are deferred. | Open (deferred by ADR-0003) | Introduce typed edges when adaptive/branching paths are implemented. |
+| A-010 | A rubric threshold of 3/5 balances rigor against beginner frustration for mastery gating. | Open | Track refusal rates and owner review of borderline answers; tune per lesson if needed. |

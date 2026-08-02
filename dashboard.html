@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Story of Intelligence Academy curriculum from numbers to linear regression." />
+    <title>Story of Intelligence Academy — Dashboard</title>
+    <link rel="stylesheet" href="assets/dashboard.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <p class="eyebrow">Story of Intelligence Academy</p>
+        <h1>Learner Dashboard</h1>
+        <p id="state" class="lead">Loading your learning path…</p>
+        <nav class="actions" aria-label="Primary actions">
+          <a id="continue-lesson" href="index.html?lesson=numbers" class="button primary">Start Numbers</a>
+          <a href="orchestration.html" class="button secondary">View Delivery Status</a>
+        </nav>
+      </header>
+
+      <section class="grid" aria-label="Numbers readiness">
+        <article class="card">
+          <h2>Current Lesson</h2>
+          <p id="lesson-title" class="value">—</p>
+          <p id="lesson-meta" class="muted">—</p>
+        </article>
+        <article class="card">
+          <h2>Graph Coverage</h2>
+          <p id="graph-count" class="value">—</p>
+          <p class="muted">Lessons in this learning path</p>
+        </article>
+        <article class="card">
+          <h2>Learner Progress</h2>
+          <p id="completion" class="value">—</p>
+          <p id="learner-count" class="muted">Your completed lessons</p>
+        </article>
+      </section>
+
+      <section class="curriculum-section" aria-labelledby="curriculum-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Your path</p>
+            <h2 id="curriculum-heading">Foundations to Machine Learning</h2>
+          </div>
+          <p id="path-summary" class="muted">Loading lessons…</p>
+        </div>
+        <ol id="curriculum" class="curriculum"></ol>
+      </section>
+
+      <section class="focus" aria-labelledby="objectives-heading">
+        <p class="eyebrow">Up next</p>
+        <h2 id="objectives-heading">Current Lesson Objectives</h2>
+        <ul id="objectives" class="objectives"></ul>
+      </section>
+
+      <section class="activity" aria-labelledby="activity-heading">
+        <h2 id="activity-heading">Latest Completion Record</h2>
+        <p id="latest">No completion records yet. Complete Lesson 1 to see local progress evidence.</p>
+      </section>
+    </main>
+
+    <script type="module" src="assets/dashboard.js"></script>
+  </body>
+</html>

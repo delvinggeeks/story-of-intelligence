@@ -1,0 +1,173 @@
+{
+  "id": "loss-optimization",
+  "version": "2.0.0",
+  "title": "Loss and Optimization",
+  "scope": "Turn prediction error into a measurable objective and improve parameters with gradient descent.",
+  "stability": "timeless",
+  "beginnerEntry": "You understand predictions, differences, functions, derivatives, and gradients.",
+  "nextConcept": "data-features-targets",
+  "knowledge": {
+    "conceptId": "loss-optimization",
+    "prerequisites": [
+      "derivatives-gradients"
+    ],
+    "relatedConcepts": [
+      "error",
+      "gradient-descent",
+      "objective"
+    ],
+    "history": "Legendre and Gauss invented least squares around 1805 to fit orbits to messy telescope data, and Cauchy described gradient descent in 1847. Together they defined the loop that trains every modern model: measure the error, follow the slope downhill, repeat.",
+    "mentalModels": [
+      {
+        "name": "Error landscape",
+        "description": "Imagine a landscape where your position is the model's parameters and the altitude is the error. Training is hiking downhill in fog — you can only feel the local slope."
+      },
+      {
+        "name": "Ball rolling into a valley",
+        "description": "Gradient descent is a ball rolling downhill: big slope means big steps, and near the valley floor the slope — and therefore the steps — shrink toward zero."
+      }
+    ],
+    "analogies": [
+      {
+        "analogy": "The hotter/colder searching game — feedback without the answer",
+        "strength": 4,
+        "whenToUse": "When explaining how loss guides search without revealing the optimum."
+      },
+      {
+        "analogy": "A ball released on a curved bowl finding the bottom",
+        "strength": 5,
+        "whenToUse": "When introducing gradient descent dynamics and learning rate."
+      }
+    ]
+  },
+  "learning": {
+    "objectives": [
+      "Explain why learning needs an objective.",
+      "Compute squared error and mean squared error.",
+      "Use gradient direction to reduce loss.",
+      "Reason about learning-rate tradeoffs."
+    ],
+    "estimatedMinutes": 90,
+    "steps": [
+      {
+        "kind": "observe",
+        "prompt": "Predictions [3,7] face targets [5,6]. Compare signed errors, absolute errors, and squared errors. What behavior does each summary reward or punish?"
+      },
+      {
+        "kind": "wonder",
+        "prompt": "Why can a model not improve consistently until success and error are represented by a specific measurable objective?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "If the loss derivative for parameter w is positive, predict whether subtracting a small multiple of it raises or lowers w and why loss may decrease."
+      },
+      {
+        "kind": "experiment",
+        "experimentId": "gradient-descent-ball",
+        "prompt": "Play the gradient descent experiment above with a small learning rate: watch the steps shrink as the ball nears the bottom. Why do the steps shrink even though the rule never changes?"
+      },
+      {
+        "kind": "fail",
+        "prompt": "Break it: set the learning rate above 1.0 and take steps. Describe exactly what goes wrong and why each step overshoots to a point with an even bigger slope."
+      },
+      {
+        "kind": "discover",
+        "prompt": "State your discovery: optimization needs only a loss to measure badness, a gradient to point downhill, and a step size small enough to not overshoot — that triple is the engine of all training."
+      },
+      {
+        "kind": "explain",
+        "prompt": "Loss converts prediction quality into a number. Gradient descent repeatedly subtracts learning rate times gradient, using local slope to seek lower loss."
+      },
+      {
+        "kind": "apply",
+        "prompt": "You guess a friend's arrival time three days running: off by +10, -5, and +20 minutes. Score yourself with mean squared error, explain why squaring punished the 20 hardest, and describe how you would adjust tomorrow's guess. You just ran gradient descent by intuition."
+      },
+      {
+        "kind": "observe",
+        "prompt": "Blindfolded on a hillside, you can only feel the slope under your feet. Step downhill, feel again, step again. No map, no summit view, yet you reach the valley. Every neural network trains exactly this way."
+      },
+      {
+        "kind": "wonder",
+        "prompt": "What goes wrong if your steps are enormous, leaping across the valley to the far slope? What if they are millimeters? Why is choosing step size, the learning rate, a real engineering decision with no perfect answer?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Loss is (w - 4) squared and w starts at 0, so the gradient is 2(w - 4). Predict the first two updates with learning rate 0.1, and predict what a learning rate of 1.5 would do instead."
+      },
+      {
+        "kind": "explain",
+        "prompt": "Training is a loop: predict, measure loss, compute gradient, update w = w - rate times gradient, repeat. Convergence means steps shrink near the bottom; divergence means overshooting worsens every step. Loss curves are the heartbeat monitor of learning."
+      },
+      {
+        "kind": "apply",
+        "prompt": "Compute MSE for predictions [3,7] against targets [5,6], then perform two updates of w = w - 0.1 times gradient for loss (w - 4) squared starting at w = 0. Notice the limitation: you optimized a made-up formula. Real learning must measure loss against real examples, which must be organized into features and targets first."
+      }
+    ],
+    "experiments": [
+      {
+        "id": "gradient-descent-ball",
+        "type": "gradient-descent",
+        "title": "Roll the ball down the loss curve",
+        "instructions": "Take gradient steps with the update w ← w − learningRate × 2w and watch the ball descend the loss curve. Then crank the learning rate past 1.0 and watch it diverge.",
+        "config": {
+          "start": 4,
+          "learningRate": 0.2
+        }
+      }
+    ]
+  },
+  "measurement": {
+    "prePrompt": "Explain how a prediction system could measure mistakes and decide what to change next.",
+    "postPrompt": "Calculate mean squared error, interpret a supplied gradient, perform two gradient-descent updates, and diagnose an unstable learning rate.",
+    "successCriteria": [
+      "Computes errors from prediction and target.",
+      "Computes mean squared error.",
+      "Uses the negative gradient direction.",
+      "Applies learning rate correctly.",
+      "Explains convergence and overshooting risks."
+    ],
+    "masteryRubric": {
+      "threshold": 3,
+      "checks": [
+        {
+          "id": "error",
+          "label": "Describe loss as measured error or difference.",
+          "pattern": "(error|loss|mistake|difference|residual)"
+        },
+        {
+          "id": "objective",
+          "label": "State the goal of minimizing the loss.",
+          "pattern": "(minimi|objective|goal|lower|reduce|smallest)"
+        },
+        {
+          "id": "gradient-step",
+          "label": "Describe stepping along the gradient.",
+          "pattern": "(gradient|step|descent|update|adjust|downhill)"
+        },
+        {
+          "id": "learning-rate",
+          "label": "Reason about step size, overshoot, or divergence.",
+          "pattern": "(learning rate|step size|too big|too small|overshoot|diverge)"
+        },
+        {
+          "id": "application",
+          "label": "Connect optimization to training models.",
+          "pattern": "(train|model|weights|converge|tune|use)"
+        }
+      ]
+    }
+  },
+  "reasoning": {
+    "misconceptions": [
+      "Loss and accuracy are always the same.",
+      "Zero signed error guarantees good predictions.",
+      "The gradient points toward lower loss.",
+      "A larger learning rate always learns faster."
+    ],
+    "tutorGuidance": "Ask what is predicted, what is observed, and how one number scores the gap. Draw a bowl-shaped loss curve and separate gradient direction from the update direction."
+  },
+  "provenance": {
+    "source": "ADR-0002 staged curriculum derived from the Academy source vision. Migrated to LOS v2.0 under ADR-0003/0004/0005.",
+    "status": "validated"
+  }
+}

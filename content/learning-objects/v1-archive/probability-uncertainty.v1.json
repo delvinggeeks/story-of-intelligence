@@ -1,0 +1,25 @@
+{
+  "id": "probability-uncertainty", "version": "1.0.0", "title": "Probability and Uncertainty",
+  "scope": "Quantify uncertainty, reason about events, and update beliefs without confusing probability with certainty.",
+  "beginnerEntry": "You can work with fractions, ordered data, and simple functions.",
+  "knowledge": { "conceptId": "probability-uncertainty", "prerequisites": ["matrices-transformations"], "relatedConcepts": ["events", "chance", "conditional-probability"] },
+  "learning": {
+    "objectives": ["Define outcomes and events.", "Estimate probability from assumptions or observations.", "Distinguish independent and conditional events.", "Interpret model probabilities as uncertainty statements."],
+    "estimatedMinutes": 65,
+    "steps": [
+      { "kind": "observe", "prompt": "A bag contains 3 blue and 1 red token. List possible outcomes for one draw and compare theoretical chance with what ten real draws might show." },
+      { "kind": "wonder", "prompt": "Why can a 75 percent event fail on the next trial, and why does that not automatically make the probability wrong?" },
+      { "kind": "predict", "prompt": "Predict how the chance of blue changes after drawing a blue token without replacement, and explain what new information caused the update." },
+      { "kind": "explain", "prompt": "Probability assigns a number from 0 to 1 to uncertainty under stated assumptions. Conditional probability updates the event space after information is known." },
+      { "kind": "apply", "prompt": "Tomorrow's forecast says 30 percent rain. Explain what that number promises and what it does not, decide whether to carry an umbrella and why, and name one more everyday number that is a probability in disguise: delivery windows, medical risk, sports odds." },
+      { "kind": "observe", "prompt": "A spam filter marks an email 92 percent spam; a weather model says 70 percent rain; a language model ranks possible next words by chance. Modern software rarely answers yes or no. It reports uncertainty." },
+      { "kind": "wonder", "prompt": "Why would a model that outputs honest probabilities be more useful to act on than one that always answers with false confidence, even when both are right equally often?" },
+      { "kind": "predict", "prompt": "In 100 emails, 40 are spam; 30 of those 40 contain the word free; 10 of the 60 legitimate emails also contain free. Before computing anything, predict which is larger: P(free given spam) or P(spam given free)." },
+      { "kind": "explain", "prompt": "Classifiers estimate P(label given evidence). Confusing it with P(evidence given label) is the classic inversion error. A threshold turns a probability into a decision, and the right threshold depends on the cost of each kind of mistake." },
+      { "kind": "apply", "prompt": "Using the email counts above, estimate P(spam) and P(free given spam), then explain in words why P(spam given free) asks a different question. Notice the limitation: one event's chance is not enough. Real datasets hold thousands of observations whose overall shape must be summarized. That is statistics and distributions." }
+    ]
+  },
+  "measurement": { "prePrompt": "Explain what a 70 percent chance means and whether it guarantees the next outcome.", "postPrompt": "Given a documented set of outcomes, compute an event probability, update it after new information, and state every assumption and limitation.", "successCriteria": ["Defines the outcome space.", "Computes a valid probability.", "Avoids interpreting probability as certainty.", "Explains a conditional update.", "Connects uncertainty to a model decision threshold."] },
+  "reasoning": { "misconceptions": ["High probability guarantees an outcome.", "Small samples must match theoretical frequencies.", "P(A given B) equals P(B given A).", "A probability is meaningful without assumptions or a population."], "tutorGuidance": "Ask for the outcome space, event, denominator, and information currently known. Use frequencies before notation and contrast forecast calibration with single-event certainty." },
+  "provenance": { "source": "ADR-0002 staged curriculum derived from the Academy source vision.", "status": "validated" }
+}

@@ -1,24 +1,27 @@
 {
-  "updatedAt": "2026-08-02T01:45:00+05:30",
-  "feature": "Numbers vertical slice",
-  "state": "full-stack implementation",
+  "updatedAt": "2026-08-02T13:45:00+05:30",
+  "feature": "Foundations to Machine Learning",
+  "state": "curriculum learner-ready; content validation pending",
   "currentTask": {
-    "id": "FS-005",
-    "title": "Full-stack Numbers product",
-    "status": "active — application foundation in progress"
+    "id": "CUR-001",
+    "title": "ADR-0002 curriculum through linear regression",
+    "status": "complete — 11 lessons deployed and validated structurally"
   },
   "sequence": [
-    { "name": "Architecture baseline and learning content", "status": "complete" },
+    { "name": "ADR-0002 curriculum governance", "status": "complete" },
+    { "name": "Eleven Learning Objects and prerequisite graph", "status": "complete" },
     { "name": "Web learning experience", "status": "complete" },
-    { "name": "Backend API and persistence", "status": "active" },
-    { "name": "Knowledge graph and tutoring services", "status": "pending" },
-    { "name": "End-to-end tests and local run path", "status": "pending" },
+    { "name": "Backend API and persistence", "status": "complete" },
+    { "name": "Knowledge graph and tutoring services", "status": "complete" },
+    { "name": "End-to-end tests and local run path", "status": "complete" },
+    { "name": "Learner dashboard implementation", "status": "complete" },
+    { "name": "Production container definition", "status": "complete" },
     { "name": "Owner validation of the complete product", "status": "pending" }
   ],
   "automation": {
-    "status": "waiting",
+    "status": "paused at owner gate",
     "cadence": "every 15 minutes",
-    "lastAction": "Full-stack scope accepted; backend API and persistence are the active build layer."
+    "lastAction": "Deployed the 11-lesson curriculum through linear regression; passed curriculum, Node, Playwright, container, API, and responsive-browser checks."
   },
-  "gate": "Owner validation occurs only after the complete full-stack Numbers product is ready."
+  "gate": "Technical release is complete; owner eye-test and observed learner evidence remain required for pedagogical sign-off."
 }

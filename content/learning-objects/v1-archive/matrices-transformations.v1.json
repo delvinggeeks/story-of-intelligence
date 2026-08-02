@@ -1,0 +1,25 @@
+{
+  "id": "matrices-transformations", "version": "1.0.0", "title": "Matrices and Transformations",
+  "scope": "Use rectangular arrays to organize datasets and transform vectors with transparent arithmetic.",
+  "beginnerEntry": "You can interpret, add, and scale vectors.",
+  "knowledge": { "conceptId": "matrices-transformations", "prerequisites": ["coordinates-vectors"], "relatedConcepts": ["tables", "linear-transformations", "systems"] },
+  "learning": {
+    "objectives": ["Identify matrix rows, columns, and shape.", "Interpret a matrix as data and as a transformation.", "Compute a small matrix-vector product.", "Connect matrices to batches of feature vectors."],
+    "estimatedMinutes": 70,
+    "steps": [
+      { "kind": "observe", "prompt": "A table has three customers as rows and age and visits as columns. What does its 3 by 2 shape communicate before reading any values?" },
+      { "kind": "wonder", "prompt": "How can the same rectangular array both store observations and describe a rule that transforms a vector?" },
+      { "kind": "predict", "prompt": "Predict how [[2,0],[0,3]] changes vector (4,5), then describe the visual effect on horizontal and vertical components." },
+      { "kind": "explain", "prompt": "A matrix has ordered rows and columns. Multiplying it by a vector forms each output from a row-weighted sum, producing a repeatable linear transformation." },
+      { "kind": "apply", "prompt": "Compute [[1,2],[3,0]] times (4,5) by hand, labeling every product and sum. Then find one rectangular table in your own day, a timetable, spreadsheet, or menu, and name what its rows and columns mean." },
+      { "kind": "observe", "prompt": "The photo on your screen is a matrix of pixel numbers. A spreadsheet of 1,000 customers with 5 columns is a 1000 by 5 matrix. The same object stores an image and a dataset." },
+      { "kind": "wonder", "prompt": "A graphics engine rotates a game character by multiplying every corner point by one matrix. What would it mean to apply one transformation matrix to every row of a customer dataset at once?" },
+      { "kind": "predict", "prompt": "Weights (0.5, 2) turn (hours studied, sleep hours) into one readiness score via a weighted sum. Predict the scores for (4, 8) and (10, 2), and predict which habit the weights reward more." },
+      { "kind": "explain", "prompt": "A machine-learning layer is exactly this: a weight matrix multiplying feature vectors, turning raw measurements into scores. Whole datasets flow through as matrix products, the same row-weighted sums you did by hand, repeated at scale." },
+      { "kind": "apply", "prompt": "Compute the readiness score [[0.5, 2]] times (6, 7) by hand, labeling each product and sum, and state what the score means. Notice the limitation: these transformations are exact, but real measurements are noisy and outcomes are not guaranteed. Arithmetic alone cannot say probably. That needs probability." }
+    ]
+  },
+  "measurement": { "prePrompt": "Explain what rows, columns, and shape mean in a rectangular table of numbers.", "postPrompt": "Interpret a 2 by 3 matrix, verify whether it can multiply a length-3 vector, compute the result, and connect the operation to feature weighting.", "successCriteria": ["States matrix shape in rows by columns.", "Labels row and column meaning.", "Checks compatible dimensions.", "Computes row-weighted sums correctly.", "Distinguishes storage from transformation roles."] },
+  "reasoning": { "misconceptions": ["Matrix dimensions may be read in either order.", "Matrix multiplication is component-wise multiplication.", "Any two shapes can be multiplied.", "Rows and columns need no semantic labels."], "tutorGuidance": "Start with shape and labels, then trace one output cell as a dot product between one row and the input vector. Do not allow memorized multiplication without dimensional meaning." },
+  "provenance": { "source": "ADR-0002 staged curriculum derived from the Academy source vision.", "status": "validated" }
+}

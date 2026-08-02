@@ -1,0 +1,176 @@
+{
+  "id": "variables-algebra",
+  "version": "2.0.0",
+  "title": "Variables and Algebra",
+  "scope": "Use names for changing or unknown quantities and solve simple equations without treating symbols as magic.",
+  "stability": "timeless",
+  "beginnerEntry": "You only need to be comfortable comparing and combining ordinary numbers.",
+  "nextConcept": "functions-graphs",
+  "knowledge": {
+    "conceptId": "variables-algebra",
+    "prerequisites": [
+      "numbers"
+    ],
+    "relatedConcepts": [
+      "expressions",
+      "equations",
+      "unknowns"
+    ],
+    "history": "Around 820 CE, al-Khwarizmi wrote the book that gave algebra its name — al-jabr, 'restoring balance'. His insight was that you can reason about an unknown amount by keeping an equation balanced, the same move every programmer makes when solving for an unknown in code.",
+    "mentalModels": [
+      {
+        "name": "Named box",
+        "description": "A variable is a labeled container that can hold any value. The name lets you write one rule that works for every possible content of the box."
+      },
+      {
+        "name": "Balance scale",
+        "description": "An equation is a scale with two pans that must stay level. Whatever you do to one side you must do to the other, and solving means isolating the unknown while keeping balance."
+      }
+    ],
+    "analogies": [
+      {
+        "analogy": "A recipe written 'per guest' instead of for exactly six guests",
+        "strength": 4,
+        "whenToUse": "When showing why naming an unknown makes a rule reusable."
+      },
+      {
+        "analogy": "A spreadsheet cell reference like =A1*2 that recalculates for any input",
+        "strength": 5,
+        "whenToUse": "When bridging from algebraic variables to variables in software."
+      }
+    ]
+  },
+  "learning": {
+    "objectives": [
+      "Explain a variable as a name for a quantity.",
+      "Translate a situation into an expression.",
+      "Solve an equation by preserving equality.",
+      "Connect variables to configurable software and model parameters."
+    ],
+    "estimatedMinutes": 70,
+    "steps": [
+      {
+        "kind": "observe",
+        "prompt": "A taxi costs 3 dollars plus 2 dollars per kilometer. Compare the totals for 1, 4, and 10 kilometers. What changes and what stays fixed?"
+      },
+      {
+        "kind": "wonder",
+        "prompt": "How could one short statement represent the price for every possible distance instead of listing every trip?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Let d be distance and C = 3 + 2d. Predict C when d = 6, then predict d when C = 21 before calculating."
+      },
+      {
+        "kind": "experiment",
+        "experimentId": "balance-solve-x",
+        "prompt": "Play the balance experiment above: slide x until the scale levels. Before it balances, describe what the tilt is telling you about your current guess."
+      },
+      {
+        "kind": "fail",
+        "prompt": "Break it: set x to a value that clearly cannot balance and explain why no amount of wishing makes 9 + 3 equal 7. What does this say about equations having specific solutions?"
+      },
+      {
+        "kind": "discover",
+        "prompt": "Write the general rule you discovered: an equation states that two expressions are the same quantity, and solving means finding the values of the unknown that make the statement true."
+      },
+      {
+        "kind": "explain",
+        "prompt": "A variable names a quantity that may vary or be unknown. An equation states that two expressions have the same value, so any solving step must preserve both sides equally."
+      },
+      {
+        "kind": "apply",
+        "prompt": "A phone plan charges C = 5 + 3g for g gigabytes. Calculate the cost for two usage levels, solve C = 20 for g, then notice one price in your own day that is really a base amount plus a per-unit rate."
+      },
+      {
+        "kind": "observe",
+        "prompt": "A program stores price = base + rate * quantity. Changing base from 3 to 5 reprices every possible trip, yet no other line of code changed. One named quantity reshaped every output."
+      },
+      {
+        "kind": "wonder",
+        "prompt": "A prediction model computes score = w * hours + b, but nobody knows w and b in advance. What does it mean to solve for a variable when the answer must come from many examples instead of one equation?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Suppose w * 2 + b must equal 10 and w * 4 + b must equal 16. Predict w and b before solving, then verify by substitution. You just recovered parameters from data."
+      },
+      {
+        "kind": "explain",
+        "prompt": "In software, a variable is named storage an engineer sets. In machine learning, some variables are parameters like w and b: unknowns the machine itself must solve for by satisfying many example equations at once, as well as it can."
+      },
+      {
+        "kind": "apply",
+        "prompt": "Write pseudocode for total(base, rate, quantity) = base + rate * quantity and evaluate it for three inputs. Notice the limitation: an equation answers one input at a time. To see how every input maps to every output at once, you need the next idea: functions and their graphs."
+      }
+    ],
+    "experiments": [
+      {
+        "id": "balance-solve-x",
+        "type": "balance-solve",
+        "title": "Balance the scale to find x",
+        "instructions": "The left pan holds x + 3, the right pan holds 7. Slide x until the scale balances. That moment of balance is what 'solving an equation' means.",
+        "config": {
+          "coefficient": 1,
+          "offset": 3,
+          "target": 7,
+          "min": 0,
+          "max": 10
+        }
+      }
+    ]
+  },
+  "measurement": {
+    "prePrompt": "Explain what x means in x + 4 = 9 and how you might find it.",
+    "postPrompt": "Model a 7-dollar base fee plus 4 dollars per item, solve for the item count when the total is 31 dollars, and justify every operation.",
+    "successCriteria": [
+      "Defines the variable and its unit.",
+      "Builds the correct expression.",
+      "Preserves equality while solving.",
+      "Checks the answer in the original equation.",
+      "Connects the variable to a computational input or parameter."
+    ],
+    "masteryRubric": {
+      "threshold": 3,
+      "checks": [
+        {
+          "id": "unknown",
+          "label": "Describe a variable as a named unknown or placeholder.",
+          "pattern": "(variable|unknown|placeholder|symbol|\\bx\\b)"
+        },
+        {
+          "id": "relationship",
+          "label": "Reference the equation or relationship between quantities.",
+          "pattern": "(equation|expression|relationship|formula|rule|balance)"
+        },
+        {
+          "id": "solve",
+          "label": "Explain solving as isolating or balancing.",
+          "pattern": "(solve|isolat|both sides|undo|balanc)"
+        },
+        {
+          "id": "generalize",
+          "label": "Note that variables make rules reusable for any value.",
+          "pattern": "(general|any value|reusab|pattern|abstract|every)"
+        },
+        {
+          "id": "application",
+          "label": "Connect variables to code, data, or a decision.",
+          "pattern": "(code|program|feature|model|decision|spreadsheet|use)"
+        }
+      ]
+    }
+  },
+  "reasoning": {
+    "misconceptions": [
+      "A variable is always an unknown rather than a quantity that can vary.",
+      "A symbol has meaning without a definition.",
+      "Moving a term across equals changes its sign by magic.",
+      "Any operation may be applied to only one side of an equation."
+    ],
+    "tutorGuidance": "Ask what quantity the symbol names, what unit it has, and which operation can be applied to both sides while preserving equality. Require substitution as a final check."
+  },
+  "provenance": {
+    "source": "ADR-0002 staged curriculum derived from the Academy source vision. Migrated to LOS v2.0 under ADR-0003/0004/0005.",
+    "status": "validated"
+  }
+}

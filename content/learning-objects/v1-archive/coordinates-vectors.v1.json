@@ -1,0 +1,25 @@
+{
+  "id": "coordinates-vectors", "version": "1.0.0", "title": "Coordinates and Vectors",
+  "scope": "Represent position, direction, and multi-feature observations as ordered numbers.",
+  "beginnerEntry": "You understand graph axes and input-output pairs.",
+  "knowledge": { "conceptId": "coordinates-vectors", "prerequisites": ["functions-graphs"], "relatedConcepts": ["position", "direction", "features"] },
+  "learning": {
+    "objectives": ["Interpret ordered coordinates.", "Distinguish points from displacement vectors.", "Add and scale vectors component by component.", "Connect vectors to machine-learning feature rows."],
+    "estimatedMinutes": 65,
+    "steps": [
+      { "kind": "observe", "prompt": "Two locations are A = (2, 1) and B = (5, 5). Describe what each ordered pair means and the movement from A to B." },
+      { "kind": "wonder", "prompt": "Why does order matter in (age, income), and what breaks if two systems reverse the positions?" },
+      { "kind": "predict", "prompt": "Predict the result and geometric effect of adding (1, 2) to (3, 4), then multiplying (3, 4) by 2." },
+      { "kind": "explain", "prompt": "Coordinates locate a point relative to axes. A vector is an ordered list that can represent displacement or features; addition and scaling act on corresponding components." },
+      { "kind": "apply", "prompt": "Describe two walks on a city grid as vectors: 3 blocks east and 2 north is (3, 2), then (1, -4). Add them to find where you end relative to the start, and notice one place today where ordered numbers give a position: GPS, row and seat, floor and room." },
+      { "kind": "observe", "prompt": "A streaming service stores you as (age, weekly hours watched, titles finished), for example (29, 6, 14). You have become a point in a three-dimensional space nobody can draw, yet arithmetic handles it exactly like the city grid." },
+      { "kind": "wonder", "prompt": "If two customers sit close together as points in feature space, they behaved similarly. What could measuring the distance between customers let a recommendation system do?" },
+      { "kind": "predict", "prompt": "Customer A = (20, 8) and B = (60, 2) as (age, weekly visits). Predict the difference vector B - A component by component, then say in words what each component of the difference means." },
+      { "kind": "explain", "prompt": "Machine learning represents every observation as a feature vector. Component-wise addition, differences, and scaling work identically in 2 or 200 dimensions, so the geometry you saw on paper generalizes into spaces only arithmetic can visit." },
+      { "kind": "apply", "prompt": "Represent three customers as (age, monthly visits) vectors, compute one difference vector and one scaled vector, and record units and feature order beside the values. Notice the limitation: handling thousands of vectors one at a time is unmanageable. You need one structure that stores and transforms them all at once: the matrix." }
+    ]
+  },
+  "measurement": { "prePrompt": "Explain what (3, 7) could mean and whether changing it to (7, 3) matters.", "postPrompt": "For A = (2, 3), B = (6, 8), derive the displacement, scale it by one half, and map the same structure to a two-feature data record.", "successCriteria": ["Names axes or feature order.", "Computes component-wise displacement.", "Scales each component correctly.", "Distinguishes a point from a displacement.", "Connects vectors to ordered model features."] },
+  "reasoning": { "misconceptions": ["Vector component order is interchangeable.", "A vector is only an arrow drawn on paper.", "Vector addition combines all numbers into one total.", "Feature vectors need no units or schema."], "tutorGuidance": "Ask the learner to label every component first, calculate one component at a time, and explain whether the ordered list represents a location, a change, or an observation." },
+  "provenance": { "source": "ADR-0002 staged curriculum derived from the Academy source vision.", "status": "validated" }
+}

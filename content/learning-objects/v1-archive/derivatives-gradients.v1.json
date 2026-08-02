@@ -1,0 +1,25 @@
+{
+  "id": "derivatives-gradients", "version": "1.0.0", "title": "Derivatives and Gradients",
+  "scope": "Understand local rate of change as the signal that tells a learning system which direction changes an output.",
+  "beginnerEntry": "You can read function graphs, slope, and changes in numeric values.",
+  "knowledge": { "conceptId": "derivatives-gradients", "prerequisites": ["statistics-distributions"], "relatedConcepts": ["rate-of-change", "slope", "calculus"] },
+  "learning": {
+    "objectives": ["Explain average and local rate of change.", "Estimate a derivative from nearby values.", "Differentiate simple linear and quadratic functions intuitively.", "Interpret a gradient as multi-parameter sensitivity."],
+    "estimatedMinutes": 75,
+    "steps": [
+      { "kind": "observe", "prompt": "A car travels 10 km in the first hour and 30 km in the next. Compare average speed over two hours with speed at a particular instant." },
+      { "kind": "wonder", "prompt": "How can increasingly small input steps reveal the slope of a curved function at one point?" },
+      { "kind": "predict", "prompt": "For y = x squared, compare output changes near x = 1 and x = 4. Predict where the graph is steeper and the sign of each slope." },
+      { "kind": "explain", "prompt": "A derivative is local output change per input change. A gradient collects one derivative per input or parameter, pointing toward fastest increase." },
+      { "kind": "apply", "prompt": "Your speedometer is a derivative: distance change per time change, right now. Name two more everyday derivatives, such as a heating bill's sensitivity to thermostat setting or weight change per week, and state each one's input, output, and sign." },
+      { "kind": "observe", "prompt": "A bakery's daily profit depends on two dials: price and batch size. Nudging price up 10 cents changes profit by one amount; baking one extra batch changes it by another. Two sensitivities, one system." },
+      { "kind": "wonder", "prompt": "If you could only measure how profit responds to tiny nudges of each dial, never see the whole profit curve, could you still climb toward the best settings? Which dial should you turn first, and in which direction?" },
+      { "kind": "predict", "prompt": "Profit sensitivity is +3 per unit of price and -2 per unit of batch size at today's settings. Predict what happens to profit if each dial is nudged up slightly, and which single change helps most." },
+      { "kind": "explain", "prompt": "That pair of sensitivities, (+3, -2), is a gradient. A learning system treats its parameters as dials, measures the gradient of its objective, and nudges every parameter in the direction that improves the outcome. This is the engine inside model training." },
+      { "kind": "apply", "prompt": "Estimate the derivative of x squared at x = 3 using values at 2.99 and 3.01, and interpret the sign for an optimizer. Notice the limitation: knowing which way is downhill is useless until something says what counts as downhill. Learning needs a score to minimize: the loss." }
+    ]
+  },
+  "measurement": { "prePrompt": "Explain slope and how you might measure the steepness of a curve at one point.", "postPrompt": "Estimate a local derivative numerically, interpret its sign and magnitude, and explain how a two-component gradient describes sensitivity to two parameters.", "successCriteria": ["Distinguishes average from local change.", "Forms a valid change ratio.", "Interprets derivative sign.", "Interprets derivative magnitude.", "Connects gradients to parameter adjustment."] },
+  "reasoning": { "misconceptions": ["A derivative is the function value.", "All curves have constant slope.", "A positive derivative means the output is positive.", "A gradient directly gives the best parameter values."], "tutorGuidance": "Return to rise over run, shrink the run around one point, and ask what sign and size say about a small parameter increase. Separate current value from current slope." },
+  "provenance": { "source": "ADR-0002 staged curriculum derived from the Academy source vision.", "status": "validated" }
+}

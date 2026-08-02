@@ -1,0 +1,25 @@
+{
+  "id": "functions-graphs", "version": "1.0.0", "title": "Functions and Graphs",
+  "scope": "Understand a function as a repeatable input-output rule and a graph as a visible record of that relationship.",
+  "beginnerEntry": "You can substitute values into a simple algebraic expression.",
+  "knowledge": { "conceptId": "functions-graphs", "prerequisites": ["variables-algebra"], "relatedConcepts": ["input", "output", "mapping"] },
+  "learning": {
+    "objectives": ["Describe a function as an input-output rule.", "Evaluate a function for a given input.", "Read slope and intercept from a graph.", "Recognize functions in programs and prediction systems."],
+    "estimatedMinutes": 60,
+    "steps": [
+      { "kind": "observe", "prompt": "A machine receives 0, 1, 2, 3 and returns 1, 3, 5, 7. Describe the repeatable relationship without using formal notation first." },
+      { "kind": "wonder", "prompt": "What must be true for an input-output process to be predictable enough to call it one rule?" },
+      { "kind": "predict", "prompt": "For f(x) = 2x + 1, predict f(10), the input that produces 15, and how the plotted line changes if +1 becomes +5." },
+      { "kind": "explain", "prompt": "A function maps each allowed input to one output. A graph places input horizontally and output vertically, revealing change, intercepts, and patterns." },
+      { "kind": "apply", "prompt": "Create a table for y = 3x - 2 at five x values and describe its graph. Then find one input-output rule in your own day, such as fare from distance or cooking time from weight, and name its input and output." },
+      { "kind": "observe", "prompt": "A weather app turns any city into a temperature; a spam filter turns any email into a score. Both are functions with one output per input, even though no algebra formula is visible anywhere." },
+      { "kind": "wonder", "prompt": "A prediction model is a function whose rule was learned rather than written by hand. If the rule is hidden inside the machine, how could you still study its behavior? Consider feeding it inputs and plotting the outputs." },
+      { "kind": "predict", "prompt": "For f(x) = 2x + 1 and g(x) = -2x + 9, predict where the two graphed lines cross, what the crossing point means, and which function grows as x grows." },
+      { "kind": "explain", "prompt": "Engineers probe functions as black boxes: choose inputs, record outputs, graph the pairs. The graph exposes the rule's behavior, with slope as sensitivity and intercept as baseline, even when the formula is unknown." },
+      { "kind": "apply", "prompt": "Write pseudocode predict(x) returning 3x - 2, tabulate five (x, y) pairs, and read slope and intercept from your table. Notice the limitation: each row carries one input number, but a real customer or house is described by several numbers at once. That needs coordinates and vectors." }
+    ]
+  },
+  "measurement": { "prePrompt": "Describe what you think a mathematical function does and what a graph can tell you.", "postPrompt": "Given g(x) = 4x + 3, calculate three points, explain slope and intercept, invert one output, and express the rule as code.", "successCriteria": ["Identifies input, rule, and output.", "Evaluates the rule correctly.", "Explains graph axes.", "Interprets slope and intercept in context.", "Expresses the same mapping in pseudocode."] },
+  "reasoning": { "misconceptions": ["A function is only a formula.", "One input may produce several outputs in the same function.", "A graph is merely decoration.", "Slope describes height rather than rate of change."], "tutorGuidance": "Have the learner narrate one input traveling through the rule to one output, then connect table rows to plotted points and slope to output change per input step." },
+  "provenance": { "source": "ADR-0002 staged curriculum derived from the Academy source vision.", "status": "validated" }
+}

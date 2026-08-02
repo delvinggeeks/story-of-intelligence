@@ -10,9 +10,13 @@
   <body>
     <main class="shell">
       <header class="hero">
-        <p class="eyebrow">Story of Intelligence Academy · Foundation Block 001</p>
+        <p id="lesson-eyebrow" class="eyebrow">Story of Intelligence Academy · Learning Studio</p>
         <h1 id="title">Numbers</h1>
         <p id="scope" class="lead">Loading the learning object…</p>
+        <nav class="top-actions" aria-label="Learning navigation">
+          <a href="dashboard.html">Back to Curriculum</a>
+          <a href="orchestration.html">Open Delivery Status</a>
+        </nav>
         <dl class="metadata">
           <div><dt>Time</dt><dd id="duration">—</dd></div>
           <div><dt>Starting point</dt><dd id="entry">—</dd></div>
@@ -28,9 +32,15 @@
         <p id="step-kind" class="step-kind">Observe</p>
         <h2 id="step-heading">What do you notice?</h2>
         <p id="step-prompt" class="step-prompt"></p>
+        <div id="experiment-region" class="experiment-region" hidden></div>
         <ul id="success-criteria" hidden></ul>
         <label for="reflection">Your thinking</label>
         <textarea id="reflection" rows="6" placeholder="Write, sketch with words, or leave this blank and think aloud."></textarea>
+        <section class="coach" aria-labelledby="coach-heading" aria-live="polite">
+          <h3 id="coach-heading">Learning Coach</h3>
+          <p id="coach-summary">Type your response to see instant coaching aligned to lesson success criteria.</p>
+          <ul id="coach-checks" class="coach-checks"></ul>
+        </section>
         <button id="tutor" type="button">Ask for coaching</button>
         <p id="tutor-response" hidden></p>
         <div class="controls">

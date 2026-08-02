@@ -1,0 +1,20 @@
+{
+  "name": "story-of-intelligence-academy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "validate": "node --check assets/app.js && node --check assets/dashboard.js && node --check assets/experiments.js && node scripts/validate-curriculum.mjs",
+    "test:unit": "node --test test/**/*.test.js",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:ci": "npm run validate && npm run test:unit && npm run test:e2e",
+    "verify": "npm run test:ci",
+    "docker:build": "docker build -t story-of-intelligence-academy:local .",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
