@@ -107,6 +107,10 @@ Tests marked `database` skip with an actionable message when PostgreSQL is unrea
 Individual layers: `npm run test:api`, `npm run lint:api`, `npm run typecheck:api`,
 `npm run test:web`, `npm run typecheck:web`, `npm run lint:web`, `npm run build:web`.
 
+`npm run test:e2e` is **not** part of `verify`. Playwright drives the built app against a
+running API and database, so it needs the stack started first; see
+[`apps/web/README.md`](apps/web/README.md#end-to-end-tests).
+
 Next.js telemetry is disabled for every local and CI invocation
 ([details](apps/web/README.md#telemetry)).
 
@@ -144,10 +148,10 @@ Phases run A→F in order, each gated on `npm run verify`.
 | --- | --- | --- |
 | A | `uv`/FastAPI backend foundation | Complete |
 | B | Next.js/TypeScript learner surface | Complete; the A→B ordering is accepted retrospectively as covered by ADR-0006 |
-| C | Local PostgreSQL/Redis persistence and migrations | **Foundation landed.** Local Compose stack, Alembic migrations, `learner`/`learning_session`/`evidence_event` tables, an append-only evidence guarantee, a repository/service boundary, and a degradable Redis cache. Content is still served read-only from files. No progress UI, no mastery logic, and no route yet writes evidence |
-| D | Backend-owned Numbers runtime, progress and mastery evidence | Deferred |
-| E | Deterministic provider-neutral tutoring abstraction | Deferred |
-| F | Playwright learner-flow E2E and full CI validation | **Deferred.** Automated coverage today is pytest, the web contract tests, and static checks. The production stack has no end-to-end browser coverage; the archived prototype's Playwright suite is not part of production CI |
+| C | Local PostgreSQL/Redis persistence and migrations | **Complete.** Local Compose stack, Alembic migrations, `learner`/`learning_session`/`evidence_event` tables, an append-only evidence guarantee, a repository/service boundary, and a degradable Redis cache |
+| D | Backend-owned Numbers runtime, progress and mastery evidence | **Landed under [ADR-0007](docs/governance/adr/ADR-0007-learner-evidence-semantics.md).** Anonymous learner bootstrap, a typed closed evidence vocabulary, an interactive Numbers runtime, a replayable progress projection, compensating retraction events, and a privileged learner-subtree erasure route. "Mastery" here means the Learning Object's own keyword rubric, reported with its checks and threshold — not a judgement of understanding. Sessions are never ended (`ended_at` is unused) and no retention window is set |
+| E | Deterministic provider-neutral tutoring abstraction | Deferred. No tutoring, no AI, and no external provider exists in production code |
+| F | Playwright learner-flow E2E and full CI validation | **Partly pulled forward into D.** `apps/web/e2e` covers the Numbers journey, reload persistence, the keyboard path, and API/database outage handling against the production stack. It is not yet wired into CI, and coverage beyond the Numbers slice does not exist |
 
 ## Archived prototype
 

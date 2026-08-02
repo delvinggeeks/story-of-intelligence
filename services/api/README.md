@@ -49,6 +49,14 @@ OpenAPI is served at `/docs` and `/openapi.json` while the server runs.
 | GET | `/health/ready` | Readiness probe. Reports database and cache separately; `503` when the database is unreachable |
 | GET | `/api/v1/graph` | Canonical Knowledge Graph |
 | GET | `/api/v1/learning-objects/{concept_id}` | One canonical Learning Object |
+| GET | `/api/v1/evidence-vocabulary` | The accepted evidence kinds and their version |
+| POST | `/api/v1/learners` | Mint an anonymous learner. No input, no personal data |
+| GET | `/api/v1/learners/{learner_id}` | Confirm a stored learner id still exists; `404` if not |
+| POST | `/api/v1/learners/{learner_id}/sessions` | Resume the open session for a concept, or start one |
+| POST | `/api/v1/sessions/{session_id}/events` | Append one validated evidence event |
+| GET | `/api/v1/sessions/{session_id}/events` | Replay one session's events in `sequence` order |
+| GET | `/api/v1/learners/{learner_id}/progress/{concept_id}` | The derived progress projection |
+| DELETE | `/internal/learners/{learner_id}` | Privileged erasure. Registered only when `ACADEMY_ERASURE_TOKEN` is set |
 
 Step display labels are part of the API contract. `STEP_KIND_LABELS` in
 [`domain/learning_object.py`](src/academy_api/domain/learning_object.py) is the single
@@ -70,6 +78,7 @@ Settings are read from `ACADEMY_`-prefixed environment variables, or from `.env`
 | `ACADEMY_REDIS_URL` | local Compose DSN | Empty disables the cache entirely |
 | `ACADEMY_CACHE_REQUIRED` | `false` | Make a missing cache URL a startup error |
 | `ACADEMY_CACHE_DEFAULT_TTL_SECONDS` | `300` | Default entry lifetime |
+| `ACADEMY_ERASURE_TOKEN` | unset | Shared secret for the erasure route. Unset means the route does not exist |
 
 A plain `postgresql://` URL is rejected at startup with the exact corrected URL in the
 error message, because the sync driver would deadlock the async engine rather than fail
@@ -86,15 +95,16 @@ Three tables, created by [`migrations/`](migrations) and mapped in
 | `learning_session` | One learner working on one concept, with start and optional end |
 | `evidence_event` | An append-only observation about a session |
 
-These tables store **facts, not judgements**. `evidence_event.kind` and `payload` are
-opaque: nothing branches on their contents. Their meaning, the retention policy, and the
-identity model are deliberately undecided and are raised in proposed
-[ADR-0007](../../docs/governance/adr/ADR-0007-learner-evidence-semantics.md).
+These tables store **facts, not judgements**. `evidence_event.kind` is drawn from the
+closed vocabulary accepted in
+[ADR-0007](../../docs/governance/adr/ADR-0007-learner-evidence-semantics.md) and its
+`payload` is validated against a typed model per kind, but nothing about mastery is
+stored: judgement is recomputed on read (see [Progress](#progress)).
 
 `evidence_event` is **immutable by contract**. The repository exposes no update and no
 delete, and [`db/immutability.py`](src/academy_api/db/immutability.py) rejects any
 modification that reaches a flush with `ImmutableRecordError` (surfaced as HTTP `409`).
-Correct a mistake by appending a compensating event.
+Correct a mistake by appending an `evidence.retracted` event naming the event it retracts.
 
 `evidence_event.sequence`, a database identity column, is the authoritative replay order.
 Timestamps are not sufficient: PostgreSQL `now()` is transaction-start time, so events
@@ -102,7 +112,52 @@ written inside one transaction share a `recorded_at`.
 
 Routes never see SQLAlchemy. [`repositories/learning.py`](src/academy_api/repositories/learning.py)
 and [`services/learning_record.py`](src/academy_api/services/learning_record.py) return frozen
-DTOs, so Phase D can persist progress without coupling routes to SQL.
+DTOs, so progress is persisted without coupling routes to SQL.
+
+Writes commit inside the request handler, not in dependency teardown. FastAPI runs a
+`yield` dependency's teardown *after* the response is sent, so committing there lets a
+client act on an id that is not yet durable and be told the record does not exist.
+
+## Evidence contract
+
+[`domain/evidence.py`](src/academy_api/domain/evidence.py) defines vocabulary version
+`1.0.0`. `GET /api/v1/evidence-vocabulary` publishes it.
+
+| Kind | Payload |
+| --- | --- |
+| `lesson.started` | `conceptVersion` |
+| `step.viewed` | `stepIndex` |
+| `experiment.performed` | `experimentId`, `normalized` |
+| `reflection.submitted` | `phase` (`pre` or `post`), `response` |
+| `lesson.completed` | `conceptVersion` |
+| `evidence.retracted` | `retractsEventId`, `reason` |
+
+On **write** an unknown kind or a payload that does not match its model is rejected with
+HTTP `422`; extra fields are forbidden. On **read** an unrecognised historical kind is
+returned as `UnreadableEvidence` and counted, never raised, so a future vocabulary change
+cannot make old data unreadable.
+
+## Progress
+
+`GET /api/v1/learners/{learner_id}/progress/{concept_id}` replays the learner's events for
+that concept in `sequence` order and derives the view in
+[`domain/progress.py`](src/academy_api/domain/progress.py). The projection is pure and
+rebuildable: nothing it returns is stored.
+
+It distinguishes **completion evidence captured** from **mastery judgement**.
+`completionRecorded` means the learner said they finished. `mastery` is only present once a
+post-reflection exists, and it reports the Learning Object's own rubric — a keyword match
+defined in the content — with the score, threshold, and per-check results shown. It is not
+a claim about understanding.
+
+## Erasure
+
+`DELETE /internal/learners/{learner_id}` deletes a learner and their whole subtree in one
+transaction, and logs a warning receipt. It is the only path that may remove evidence.
+It is excluded from the OpenAPI schema, requires the `X-Academy-Erasure-Token` header
+compared with `secrets.compare_digest`, and **is not registered at all** unless
+`ACADEMY_ERASURE_TOKEN` is set. Individual evidence events remain un-updatable and
+un-deletable through every ordinary route.
 
 ### Migrations
 
@@ -171,7 +226,8 @@ runs agree.
 ## Scope
 
 Production scope is exactly one Numbers Learning Object (ADR-0006 acceptance criterion 3).
-Phase C added the persistence foundation only: the tables exist and are exercised by tests,
-but no route writes evidence yet. Progress, mastery evidence, and tutoring contracts arrive
-in Phase D and are blocked on proposed ADR-0007. Nothing here depends on the archived Node
-prototype.
+Phase C added the persistence foundation; Phase D added the learner loop on top of it under
+accepted [ADR-0007](../../docs/governance/adr/ADR-0007-learner-evidence-semantics.md): a
+typed evidence vocabulary, a replayable progress projection, compensating retractions, and
+the privileged erasure route. Tutoring contracts are Phase E and are **not** implemented.
+Nothing here depends on the archived Node prototype.

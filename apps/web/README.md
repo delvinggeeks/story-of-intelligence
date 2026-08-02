@@ -58,7 +58,44 @@ The step taxonomy and its display labels belong to the API. This app renders
 [`tests/step-taxonomy.test.mjs`](tests/step-taxonomy.test.mjs) fails the build if any
 source file re-introduces a hard-coded step vocabulary.
 
+All data comes from the API. No component reads `packages/content` or the filesystem.
+Lesson text is fetched server-side via `ACADEMY_API_URL`; the learner loop is fetched from
+the browser via `NEXT_PUBLIC_ACADEMY_API_URL`, which must be reachable from the learner's
+machine. [`tests/learner-identity.test.mjs`](tests/learner-identity.test.mjs) enforces both.
+
+## Learner runtime
+
+[`components/lesson-runtime.tsx`](src/components/lesson-runtime.tsx) walks the pre-prompt,
+the steps, and the post-prompt, appending one evidence event per action and re-reading the
+server's progress projection after each write. On load it reuses the learner id in
+`localStorage`, confirms it still exists, and resumes at the furthest recorded step.
+
+**Only an opaque server-generated UUID is stored client-side** under `academy.learnerId`.
+No name, email, account, or device fingerprint is collected.
+
+The progress panel shows what was recorded and, once an explanation is submitted, the
+Learning Object's own rubric result. That rubric is a keyword check written into the
+content, and the panel says so: it is not a judgement of understanding.
+
+Loading, empty, and failure states are explicit. `loading.tsx` and `error.tsx` cover the
+server-rendered lesson; the runtime renders an in-page alert when the API, PostgreSQL, or
+Redis is unreachable, and the lesson text stays readable throughout.
+
+## End-to-end tests
+
+[`e2e/`](e2e) runs Playwright against the **built** app and a real API. Start both first:
+
+```powershell
+docker compose -f infra/docker-compose.local.yml up -d
+uv run --directory services/api alembic upgrade head
+uv run --directory services/api uvicorn academy_api.main:app --port 8000
+npm run build:web; npm run start --workspace @academy/web
+npm run test:e2e
+```
+
+The config deliberately has no `webServer` block: these tests are meant to exercise the
+production stack an operator actually runs, not one Playwright quietly starts for them.
+
 ## Scope
 
-Read-only rendering of the Numbers slice. Interactive experiments, progress, mastery evaluation,
-and tutoring are backend contracts scheduled for Phase D and are intentionally absent here.
+The Numbers slice only. Tutoring contracts are Phase E and are intentionally absent.
