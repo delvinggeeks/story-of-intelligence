@@ -1,16 +1,17 @@
-"""Records learning facts. Interprets none of them.
+"""Records learning facts and enforces the ADR-0007 write contract.
 
-This service is the Phase D seam: routes call it, it calls repositories, and no
-SQLAlchemy type crosses its boundary. It deliberately contains no scoring, no mastery
-policy, and no progress derivation - those require the proposed ADR-0007 to be accepted
-first.
+Routes call this service, it calls repositories, and no SQLAlchemy type crosses its
+boundary. It validates that an event is well-formed (D1 vocabulary, D2 payload) but still
+derives nothing: judgement lives in `academy_api.services.progress`, which recomputes it
+from the event stream instead of freezing it into the record.
 """
 
 import uuid
 from datetime import datetime
 
-from academy_api.core.exceptions import ContentNotFoundError
+from academy_api.core.exceptions import ContentNotFoundError, EvidenceContractError
 from academy_api.db.models import EvidenceEvent, Learner, LearningSession
+from academy_api.domain.evidence import EvidenceKind, EvidenceRetracted, validate_for_write
 from academy_api.domain.learning_record import (
     EvidenceEventRecord,
     LearnerRecord,
@@ -21,8 +22,6 @@ from academy_api.repositories.learning import (
     LearnerRepository,
     LearningSessionRepository,
 )
-
-MAX_PAYLOAD_KEYS = 64
 
 
 class LearningRecordService:
@@ -50,6 +49,17 @@ class LearningRecordService:
             raise ContentNotFoundError(f"No learner with id '{learner_id}'.")
         return _session_record(await self._sessions.start(learner_id, concept_id))
 
+    async def resume_or_start_session(
+        self, learner_id: uuid.UUID, concept_id: str
+    ) -> LearningSessionRecord:
+        """Reloading the page must not fragment one sitting into many sessions."""
+        if await self._learners.get(learner_id) is None:
+            raise ContentNotFoundError(f"No learner with id '{learner_id}'.")
+        existing = await self._sessions.find_open(learner_id, concept_id)
+        if existing is not None:
+            return _session_record(existing)
+        return _session_record(await self._sessions.start(learner_id, concept_id))
+
     async def end_session(self, session_id: uuid.UUID) -> LearningSessionRecord:
         learning_session = await self._sessions.end(session_id)
         if learning_session is None:
@@ -69,19 +79,42 @@ class LearningRecordService:
         payload: dict[str, object] | None = None,
         occurred_at: datetime | None = None,
     ) -> EvidenceEventRecord:
-        """Append one immutable observation. The payload is stored, never interpreted."""
-        if await self._sessions.get(session_id) is None:
+        """Append one immutable observation, rejecting anything the contract does not define."""
+        learning_session = await self._sessions.get(session_id)
+        if learning_session is None:
             raise ContentNotFoundError(f"No learning session with id '{session_id}'.")
-        body = payload or {}
-        if len(body) > MAX_PAYLOAD_KEYS:
-            raise ValueError(
-                f"Evidence payload has {len(body)} keys; the limit is {MAX_PAYLOAD_KEYS}."
-            )
-        event = await self._evidence.append(session_id, kind, body, occurred_at)
+
+        stored = validate_for_write(kind, payload or {})
+        if kind == EvidenceKind.EVIDENCE_RETRACTED:
+            await self._assert_retractable(learning_session, stored)
+
+        event = await self._evidence.append(session_id, kind, stored, occurred_at)
         return _evidence_record(event)
+
+    async def _assert_retractable(
+        self, learning_session: LearningSession, stored: dict[str, object]
+    ) -> None:
+        """A learner may only retract their own evidence."""
+        target_id = EvidenceRetracted.model_validate(
+            {**stored, "kind": EvidenceKind.EVIDENCE_RETRACTED}
+        ).retracts_event_id
+        target = await self._evidence.get(target_id)
+        if target is None:
+            raise EvidenceContractError(f"Cannot retract evidence '{target_id}': no such event.")
+        owner = await self._sessions.get(target.session_id)
+        if owner is None or owner.learner_id != learning_session.learner_id:
+            raise EvidenceContractError(
+                f"Cannot retract evidence '{target_id}': it belongs to another learner."
+            )
 
     async def list_evidence(self, session_id: uuid.UUID) -> list[EvidenceEventRecord]:
         found = await self._evidence.list_for_session(session_id)
+        return [_evidence_record(item) for item in found]
+
+    async def list_evidence_for_concept(
+        self, learner_id: uuid.UUID, concept_id: str
+    ) -> list[EvidenceEventRecord]:
+        found = await self._evidence.list_for_learner_concept(learner_id, concept_id)
         return [_evidence_record(item) for item in found]
 
 

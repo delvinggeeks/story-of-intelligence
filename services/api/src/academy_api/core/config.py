@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     cache_required: bool = False
     cache_default_ttl_seconds: int = Field(default=300, ge=1)
 
+    # ADR-0007 D6 erasure. Unset means the endpoint does not exist, not that it is open.
+    erasure_token: str | None = None
+
     @field_validator("content_root")
     @classmethod
     def _anchor_content_root(cls, value: Path) -> Path:

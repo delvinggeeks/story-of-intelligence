@@ -14,6 +14,7 @@ from academy_api.repositories.learning import (
     SqlLearningSessionRepository,
 )
 from academy_api.services.learning_record import LearningRecordService
+from academy_api.services.progress import ProgressService
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
@@ -59,3 +60,12 @@ def get_learning_record_service(session: DbSessionDep) -> LearningRecordService:
 
 
 LearningRecordServiceDep = Annotated[LearningRecordService, Depends(get_learning_record_service)]
+
+
+def get_progress_service(
+    records: LearningRecordServiceDep, content: ContentRepositoryDep
+) -> ProgressService:
+    return ProgressService(records, content)
+
+
+ProgressServiceDep = Annotated[ProgressService, Depends(get_progress_service)]

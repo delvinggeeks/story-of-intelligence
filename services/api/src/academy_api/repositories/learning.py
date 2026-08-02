@@ -1,10 +1,11 @@
 """Persistence access for learners, sessions, and evidence.
 
-Routes must never see SQLAlchemy. Phase D consumes the protocols in this module, so the
-storage engine can change without touching the HTTP layer.
+Routes must never see SQLAlchemy. The protocols in this module are what the service layer
+consumes, so the storage engine can change without touching the HTTP layer.
 
 Deliberate omissions: there is no update and no delete anywhere here. Evidence is
-append-only, and retention/erasure policy is deferred to the proposed ADR-0007.
+append-only (ADR-0007 D4), and the one sanctioned deletion path lives in
+`academy_api.services.erasure`, well away from this surface.
 """
 
 import uuid
@@ -28,6 +29,7 @@ class LearningSessionRepository(Protocol):
     async def start(self, learner_id: uuid.UUID, concept_id: str) -> LearningSession: ...
     async def get(self, session_id: uuid.UUID) -> LearningSession | None: ...
     async def end(self, session_id: uuid.UUID) -> LearningSession | None: ...
+    async def find_open(self, learner_id: uuid.UUID, concept_id: str) -> LearningSession | None: ...
     async def list_for_learner(
         self, learner_id: uuid.UUID, concept_id: str | None = None
     ) -> Sequence[LearningSession]: ...
@@ -41,7 +43,11 @@ class EvidenceRepository(Protocol):
         payload: dict[str, object],
         occurred_at: datetime | None = None,
     ) -> EvidenceEvent: ...
+    async def get(self, event_id: uuid.UUID) -> EvidenceEvent | None: ...
     async def list_for_session(self, session_id: uuid.UUID) -> Sequence[EvidenceEvent]: ...
+    async def list_for_learner_concept(
+        self, learner_id: uuid.UUID, concept_id: str
+    ) -> Sequence[EvidenceEvent]: ...
 
 
 class SqlLearnerRepository:
@@ -98,6 +104,21 @@ class SqlLearningSessionRepository:
         result = await self._session.execute(statement.order_by(LearningSession.started_at))
         return result.scalars().all()
 
+    async def find_open(self, learner_id: uuid.UUID, concept_id: str) -> LearningSession | None:
+        """The most recent session the learner never ended, so a reload resumes it."""
+        statement = (
+            select(LearningSession)
+            .where(
+                LearningSession.learner_id == learner_id,
+                LearningSession.concept_id == concept_id,
+                LearningSession.ended_at.is_(None),
+            )
+            .order_by(LearningSession.started_at.desc())
+            .limit(1)
+        )
+        result = await self._session.execute(statement)
+        return result.scalars().first()
+
 
 class SqlEvidenceRepository:
     def __init__(self, session: AsyncSession) -> None:
@@ -120,10 +141,29 @@ class SqlEvidenceRepository:
         await self._session.flush()
         return event
 
+    async def get(self, event_id: uuid.UUID) -> EvidenceEvent | None:
+        return await self._session.get(EvidenceEvent, event_id)
+
     async def list_for_session(self, session_id: uuid.UUID) -> Sequence[EvidenceEvent]:
         statement = (
             select(EvidenceEvent)
             .where(EvidenceEvent.session_id == session_id)
+            .order_by(EvidenceEvent.sequence)
+        )
+        result = await self._session.execute(statement)
+        return result.scalars().all()
+
+    async def list_for_learner_concept(
+        self, learner_id: uuid.UUID, concept_id: str
+    ) -> Sequence[EvidenceEvent]:
+        """Every event across every session, so progress survives a reload or a new session."""
+        statement = (
+            select(EvidenceEvent)
+            .join(LearningSession, EvidenceEvent.session_id == LearningSession.id)
+            .where(
+                LearningSession.learner_id == learner_id,
+                LearningSession.concept_id == concept_id,
+            )
             .order_by(EvidenceEvent.sequence)
         )
         result = await self._session.execute(statement)
