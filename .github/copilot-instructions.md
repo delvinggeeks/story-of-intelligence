@@ -9,7 +9,7 @@ The Academy Constitution is authoritative: `docs/governance/academy-constitution
 ## Non-negotiable guardrails
 
 - EDM v1.0 is frozen. Do not rename, add, remove, or reinterpret an EDM model without an ADR.
-- The current product scope is the ADR-0002 learning path from **Numbers** through **linear regression from scratch**. Do not expand beyond that path or add renderers, agents, enterprise infrastructure, or premature optimization.
+- The current production scope is the ADR-0006 platform serving exactly one Numbers Learning Object. Do not expand beyond that scope or add renderers, agents, enterprise infrastructure, or premature optimization. The archived `prototype/` 11-lesson path (ADR-0002) is reference only and must not be extended.
 - Preserve beginner perspective: explain concepts before relying on expert shorthand.
 - Prefer the smallest verifiable change. Do not add dependencies or scaffolding unless the current acceptance criteria require them.
 - Distinguish facts, assumptions, hypotheses, decisions, and evidence. Record an unresolved hypothesis in `docs/governance/assumption-register.md`; record validated results in `docs/governance/evidence-register.md`.
@@ -23,6 +23,10 @@ The Academy Constitution is authoritative: `docs/governance/academy-constitution
 4. Run the available validation; never claim a check passed unless it ran.
 5. Summarize changed files, validation results, assumptions, and next smallest step.
 
-## Current Sprint 2 target
+## Current target
 
-Implement and validate the ADR-0002 curriculum through linear regression using LOS v1.0 and the existing renderer. A completed increment must preserve graph prerequisites, per-concept progress, mastery-gated dashboard navigation, Runtime and Reasoning compatibility, and frozen EDM v1.0.
+ADR-0006 supersedes the earlier Sprint 2 target (ADR-0002 curriculum through linear regression on LOS v1.0 and the Node renderer). That work is archived under `prototype/` and must not be extended.
+
+The current target is the ADR-0006 production platform: a `uv`/Python/FastAPI backend (`services/api`) and a Next.js/React/TypeScript learner surface (`apps/web`), serving exactly **one** Numbers Learning Object (LOS v2.0) from `packages/content`. Expanding the production curriculum beyond Numbers requires a new ADR.
+
+Phases run A→F in order, each gated by passing `npm run verify` before the next begins.

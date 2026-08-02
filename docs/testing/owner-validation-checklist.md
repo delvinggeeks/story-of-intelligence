@@ -10,10 +10,16 @@ Run a clear manual validation pass that mirrors automated checks and confirms le
 
 ## Local startup
 
-1. Install dependencies:
+> **Superseded for the production stack (ADR-0006).** The commands below drive the archived
+> Node/static prototype and must now be run from `prototype/`. The production learner surface
+> is started with `npm run dev:api` and `npm run dev:web` from the repository root; see the
+> root [README](../../README.md#local-run). The manual journey checks below still describe the
+> prototype's 11-lesson flow, which production has not yet reimplemented.
+
+1. Install dependencies (from `prototype/`):
 - npm ci
 
-2. Start the app:
+2. Start the app (from `prototype/`):
 - npm run start
 
 If default port 8765 is in use, run with alternate port:

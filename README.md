@@ -6,8 +6,9 @@ This repository is the authoritative, Git-first workspace for the Story of Intel
 
 - Architecture baseline: Educational Domain Model (EDM) v1.0 — frozen
 - Governance: ADR-based
-- Current scope: one executable learning path from **Numbers** through **Linear Regression From Scratch**
-- Application implementation: 11 LOS v1.0 learning objects, prerequisite graph, shared renderer, adaptive coaching, progress persistence, and mastery-gated learner dashboard
+- Production platform: `uv`/Python/FastAPI backend + Next.js/React/TypeScript frontend ([ADR-0006](docs/governance/adr/ADR-0006-production-platform-foundation.md))
+- Production scope: exactly one Numbers Learning Object (LOS v2.0)
+- The former Node/static implementation is archived under [`prototype/`](prototype/) as exploratory reference only
 
 The governing baseline is [the Academy Constitution](docs/governance/academy-constitution-ssot-v1.1.md). Original conversation exports are preserved verbatim in `docs/source/`.
 
@@ -15,27 +16,97 @@ The governing baseline is [the Academy Constitution](docs/governance/academy-con
 
 Changes to the frozen architecture require an ADR. Hypotheses belong in an assumption register; validated findings belong in an evidence register. Do not silently reinterpret the source exports.
 
+## Repository structure
+
+```
+apps/web/          Next.js learner surface (no static HTML, no bundled curriculum)
+services/api/      FastAPI service — owns content and Knowledge Graph contracts
+packages/content/  canonical LOS v2.0 artifacts and schema
+docs/              constitution, ADRs, registers, control, source exports
+prototype/         archived Node/static prototype (reference only, not extended)
+```
+
+Everything the learner surface renders is fetched over HTTP from the API. The frontend never
+reads content files, and no page is served as static HTML.
+
+## Prerequisites
+
+- [`uv`](https://docs.astral.sh/uv/) (manages Python; no system Python install required)
+- Node.js >= 20
+
 ## Local run
 
-1. Install dependencies:
-	- `npm ci`
-2. Start local server:
-	- `npm run start`
-3. Open in browser:
-	- Learner dashboard and curriculum: `http://127.0.0.1:8765/dashboard.html`
-	- Lesson 1 (Numbers): `http://127.0.0.1:8765/index.html?lesson=numbers`
-	- Lesson 11 (Linear Regression): `http://127.0.0.1:8765/index.html?lesson=linear-regression`
-	- Delivery status: `http://127.0.0.1:8765/orchestration.html`
+```powershell
+Copy-Item .env.example .env
 
-If 8765 is occupied, the server automatically falls back to the next available local port and prints the active URL.
+# terminal 1 — API on http://127.0.0.1:8000 (OpenAPI at /docs)
+uv sync --directory services/api --all-groups
+npm run dev:api
 
-## Docker
+# terminal 2 — web on http://127.0.0.1:3000
+npm install
+npm run dev:web
+```
 
-Build and run the production container:
+`.env` is read from the repository root (and optionally `services/api/.env`) using absolute
+paths, so the API behaves the same however it is launched. A relative `ACADEMY_CONTENT_ROOT`
+resolves against the repository root, not the working directory. See
+[`services/api/README.md`](services/api/README.md#configuration).
 
-- `docker compose up --build -d`
-- Open `http://127.0.0.1:8765/dashboard.html`
-- Check health with `docker compose ps`
-- Stop with `docker compose down`
+## Verification
 
-The container runs as a non-root user, persists learner progress in a named volume, exposes health/readiness endpoints, and shuts down gracefully. See [Docker deployment](docs/development/docker-deployment.md).
+```powershell
+npm run verify     # ruff + mypy + pytest + eslint + web tests + next build + tsc
+```
+
+Individual layers: `npm run test:api`, `npm run lint:api`, `npm run typecheck:api`,
+`npm run test:web`, `npm run typecheck:web`, `npm run lint:web`, `npm run build:web`.
+
+Next.js telemetry is disabled for every local and CI invocation
+([details](apps/web/README.md#telemetry)).
+
+## Environment notes
+
+- **OneDrive and `uv`.** This checkout sits under a OneDrive-synced path where `uv`'s default
+  hardlink strategy fails with `os error 396`. `services/api/pyproject.toml` sets
+  `[tool.uv] link-mode = "copy"`, and CI sets `UV_LINK_MODE=copy`, so no per-shell workaround
+  is needed. An in-progress OneDrive sync can still cause a transient `Access is denied
+  (os error 5)` during install; re-run the command.
+- **Interpreter pin.** `services/api/.python-version` pins the Python version `uv` provisions.
+
+## Dependency policy
+
+- **Overrides.** `overrides` in [`package.json`](package.json) force `postcss ^8.5.25` and
+  `sharp ^0.35.3` above the versions Next.js resolves transitively. Reason: the versions
+  pulled in by default carried high-severity advisories, and npm's suggested remediation was
+  a downgrade of `next` itself, which is not acceptable. Risk: an override can pin a transitive
+  dependency to a version its parent has not been tested against. Both packages are
+  build-time only, both floors are within the semver range Next.js declares, and the full
+  `npm run verify` suite is the control. Revisit and remove each override once Next.js
+  resolves the fixed versions on its own.
+- **Audit policy.** `npm audit --audit-level=high` runs in CI as a **separate, advisory
+  (`continue-on-error`) job**, not as a gate on the build. An upstream advisory with no
+  released fix is a real and recurring condition; letting it block every unrelated change
+  would be worse than tracking it. A failing audit is not ignorable: it must be triaged and
+  recorded in [`docs/governance/evidence-register.md`](docs/governance/evidence-register.md)
+  before merge. Run it locally with `npm run audit:web`.
+
+## Phase status (ADR-0006)
+
+Phases run A→F in order, each gated on `npm run verify`.
+
+| Phase | Scope | Status |
+| --- | --- | --- |
+| A | `uv`/FastAPI backend foundation | Complete |
+| B | Next.js/TypeScript learner surface | Complete; the A→B ordering is accepted retrospectively as covered by ADR-0006 |
+| C | Local PostgreSQL/Redis persistence and migrations | **Deferred, not started.** Content is served read-only from files. There is no database, no migrations, and no progress persistence in the production path |
+| D | Backend-owned Numbers runtime, progress and mastery evidence | Deferred |
+| E | Deterministic provider-neutral tutoring abstraction | Deferred |
+| F | Playwright learner-flow E2E and full CI validation | **Deferred.** Automated coverage today is pytest, the web contract tests, and static checks. The production stack has no end-to-end browser coverage; the archived prototype's Playwright suite is not part of production CI |
+
+## Archived prototype
+
+[`prototype/`](prototype/) retains the full Node/static implementation — 11 LOS v2.0 learning
+objects, the interactive experiment engine, the rubric tutor, its tests, and its container
+tooling. It is preserved as migration evidence under ADR-0006 and is not part of the production
+build, CI, or dependency graph. It must not be extended.

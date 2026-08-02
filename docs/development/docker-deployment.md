@@ -3,6 +3,11 @@
 Status: Production container definition for the Numbers vertical slice
 ADR impact: None
 
+> **Superseded for the production stack (ADR-0006).** This document describes the archived
+> Node/static prototype container. Every command below must be run from `prototype/`, and the
+> URLs refer to that prototype server. The production `uv`/FastAPI + Next.js stack has no
+> container definition yet; it arrives with Phase C. Retained as migration reference.
+
 ## Scope
 
 The image serves the approved full-stack Numbers experience only:
@@ -12,6 +17,8 @@ The image serves the approved full-stack Numbers experience only:
 - local API and progress persistence
 
 ## Build and run
+
+Run from `prototype/`:
 
 ```text
 docker compose up --build -d

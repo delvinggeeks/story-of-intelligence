@@ -13,5 +13,31 @@
 | E-009 | 2026-08-02 | Implemented ADR-0002; ran `npm run test:ci`, rebuilt with `docker compose up --build -d`, probed graph/dashboard/final-lesson APIs, and inspected the dashboard at desktop and 390 px browser widths. | Curriculum validation passed for 11 graph nodes and 11 LOS objects; Node 12/12 and Playwright 8/8 passed; container reached `healthy` as UID 1000; deployed APIs returned 11 lessons ending in Linear Regression From Scratch; mobile had no horizontal overflow. | ADR-0002, A-001, A-005 | Validates structural and runtime completion of the staged curriculum; beginner learning effectiveness and content depth remain open. |
 | E-010 | 2026-08-02 | Deepened the ten ADR-0002 lessons to two full observe→wonder→predict→explain→apply depth loops (10 steps each; loop 1 daily-life lens, loop 2 data/engineering/ML lens, final apply bridging to the next lesson); added an all-lesson depth contract test; reran `npm run test:ci`; rebuilt the container and probed `/healthz` plus two deepened lesson APIs. | Curriculum validation passed (11/11); Node 13/13 including the new "two depth loops and bridges forward" gate for every lesson; Playwright 8/8 including the 10-step final-lesson journey; container `healthy` and serving 10-step lessons with a final `apply` step. | A-005, R-037, R-038 | Validates structural depth and flow-bridging of all 11 lessons; pedagogical sufficiency of two loops still requires owner eye-test (A-005 remains open). |
 | E-011 | 2026-08-02 | Implemented ADR-0003 (LOS v2.0: mental models, analogies, history, stability, nextConcept, mastery rubric, 16-kind step enum with Experiment→Fail→Discover arc), ADR-0004 (zero-dependency interactive experiment engine, 11 playable experiments — one per lesson), and ADR-0005 (rubric-reasoning tutor + server-side mastery-gated completion); migrated all 11 Learning Objects to v2 (13 steps each), archived v1, repointed the graph; ran `npm run validate`, `npm run test:unit`, `npm run test:e2e`; rebuilt the container and probed `/healthz` and two v2 lesson APIs. | Curriculum validation passed (11 nodes / 11 v2 objects); Node 14/14 including new knowledge-asset/experiment/rubric gates; Playwright 10/10 including a live experiment interaction (unit-compare flip) and a mastery-gate refusal path; container `healthy`, serving version 2.0.0 lessons with experiment specs. | ADR-0003, ADR-0004, ADR-0005, A-006..A-010 | Validates that the platform now runs playable experiments, evidence-scored gating, and richer Learning Objects end to end; learner-outcome validation remains open. |
+| E-012 | 2026-08-03 | Under ADR-0006 Phase A/B remediation: made content-root/`.env` resolution working-directory independent (`core/paths.py`), moved the step-label taxonomy from the frontend into the API contract (`STEP_KIND_LABELS`, serialised as `steps[].label`), disabled Next.js telemetry via `apps/web/scripts/next.mjs`, pinned `.python-version` and `[tool.uv] link-mode = "copy"`, made `typecheck:web` clean-checkout safe, and made the `npm audit` CI job advisory rather than a build gate. Ran `uv lock --check`, `pytest`, `ruff check`, `ruff format --check`, `mypy`, `npm run lint:web`, `npm run test:web`, `npm run build:web`, `npm run typecheck:web`, and `next telemetry status`. | Lockfile current (36 packages); pytest 24/24 passed; ruff and strict mypy clean (24 files / 18 source files); ESLint clean; web contract tests 3/3 passed; Next build compiled; `typecheck:web` passed after deleting `.next`, proving clean-checkout safety; telemetry reports `Status: Disabled`. | ADR-0006 | Closes the Phase A/B review blockers. Also records the two `numbers.v2.json` content deltas documented below. Phase C (PostgreSQL) not started. |
 
 Evidence entries must state the method, result, date, and related assumption or ADR.
+
+## Owner decisions recorded with E-012
+
+Recorded here rather than in a new ADR because none of these changes an accepted ADR
+decision; each confirms or applies ADR-0006 as already written.
+
+| Date | Decision | Rationale |
+| --- | --- | --- |
+| 2026-08-02 | The Phase A → Phase B ordering is accepted retrospectively as covered by ADR-0006. | Phase B work began before Phase A's `npm run verify` gate was formally run. Both phases now pass that gate together, and the review found no defect attributable to the ordering. Accepted as-is; the gate stands unchanged for Phases C–F. |
+| 2026-08-02 | The preserved prototype step labels are the canonical production labels. | The prototype's `labels` map is existing governed copy validated under E-011. Reusing it verbatim avoids inventing new taxonomy copy without an ADR. `STEP_KIND_LABELS` in the API is now the single source of truth. |
+| 2026-08-02 | Lesson `headings` are **not** promoted into the canonical contract yet. | The prototype also carries a per-kind `headings` map. Promoting it is not required by the current acceptance criteria, so it stays out of the contract. Tracked as A-011. |
+
+## Content provenance — production seed
+
+`packages/content/learning-objects/numbers.v2.json` is a copy of
+`prototype/content/learning-objects/numbers.v2.json` (the object validated in E-011), with
+exactly two intentional deltas. No other field was altered.
+
+| # | Field | Prototype value | Production value | Rationale |
+| --- | --- | --- | --- | --- |
+| 1 | `nextConcept` | `"variables-algebra"` | `null` | ADR-0006 production scope is exactly one Learning Object. Retaining the pointer would create a dangling reference to a concept absent from `packages/content/knowledge-graph.json`. Restore when the next concept is promoted. |
+| 2 | `provenance.source` | `"Sprint 1 Numbers vertical slice, derived under Academy Constitution SSOT v1.0. Migrated to LOS v2.0 under ADR-0003/0004/0005."` | `"Production seed for the ADR-0006 Numbers vertical slice, migrated from the Node prototype LOS v2.0 object."` | Provenance must name the artifact's actual origin and governing decision. Restated, not erased — the prototype lineage is retained in this table and in E-011. |
+
+No pedagogical content (steps, experiments, mental models, analogies, rubric, measurement)
+was changed. See E-012.
