@@ -48,7 +48,9 @@ async def db_session(database_url: str) -> AsyncIterator[AsyncSession]:
     try:
         async with engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
-    except SQLAlchemyError:
+    # A refused connect arrives as a bare OSError that SQLAlchemy never wraps, so
+    # catching SQLAlchemyError alone turns "no database" into 14 errors instead of skips.
+    except (SQLAlchemyError, OSError):
         await engine.dispose()
         pytest.skip(SKIP_REASON)
 
