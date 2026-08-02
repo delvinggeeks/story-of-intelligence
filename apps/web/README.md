@@ -98,4 +98,5 @@ production stack an operator actually runs, not one Playwright quietly starts fo
 
 ## Scope
 
-The Numbers slice only. Tutoring contracts are Phase E and are intentionally absent.
+The Numbers slice only. The "Ask for help" panel renders answers from the API's deterministic
+tutoring layer; there is no model, no external provider, and no stored conversation.

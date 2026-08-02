@@ -24,7 +24,8 @@ src/academy_api/
   api/dependencies.py  dependency-injection wiring
   api/v1/              versioned HTTP surface
   core/                settings and domain-neutral errors
-  domain/              LOS v2.0 and Knowledge Graph contracts
+  domain/              LOS v2.0, Knowledge Graph, evidence, progress, tutoring contracts
+  providers/           tutoring providers behind a Protocol
   repositories/        content access behind a Protocol
 tests/                 contract and behaviour tests
 ```
@@ -56,6 +57,8 @@ OpenAPI is served at `/docs` and `/openapi.json` while the server runs.
 | POST | `/api/v1/sessions/{session_id}/events` | Append one validated evidence event |
 | GET | `/api/v1/sessions/{session_id}/events` | Replay one session's events in `sequence` order |
 | GET | `/api/v1/learners/{learner_id}/progress/{concept_id}` | The derived progress projection |
+| GET | `/api/v1/tutor/capabilities` | Registered tutoring providers and the tasks each supports |
+| POST | `/api/v1/tutor` | Ask for help. Reads only; writes nothing |
 | DELETE | `/internal/learners/{learner_id}` | Privileged erasure. Registered only when `ACADEMY_ERASURE_TOKEN` is set |
 
 Step display labels are part of the API contract. `STEP_KIND_LABELS` in
@@ -79,6 +82,7 @@ Settings are read from `ACADEMY_`-prefixed environment variables, or from `.env`
 | `ACADEMY_CACHE_REQUIRED` | `false` | Make a missing cache URL a startup error |
 | `ACADEMY_CACHE_DEFAULT_TTL_SECONDS` | `300` | Default entry lifetime |
 | `ACADEMY_ERASURE_TOKEN` | unset | Shared secret for the erasure route. Unset means the route does not exist |
+| `ACADEMY_TUTOR_PROVIDER` | `deterministic-los` | Default tutoring provider. Only one is registered |
 
 A plain `postgresql://` URL is rejected at startup with the exact corrected URL in the
 error message, because the sync driver would deadlock the async engine rather than fail
@@ -149,6 +153,51 @@ It distinguishes **completion evidence captured** from **mastery judgement**.
 post-reflection exists, and it reports the Learning Object's own rubric — a keyword match
 defined in the content — with the score, threshold, and per-check results shown. It is not
 a claim about understanding.
+
+## Tutoring
+
+`POST /api/v1/tutor` answers one help request. The architecture is provider-neutral:
+[`domain/tutoring.py`](src/academy_api/domain/tutoring.py) owns the typed contracts,
+[`providers/base.py`](src/academy_api/providers/base.py) defines the `TutorProvider`
+Protocol, [`services/tutoring.py`](src/academy_api/services/tutoring.py) routes to a
+provider, and the route layer only translates HTTP. Adding a provider means implementing
+the Protocol and registering it in `api/dependencies.py`; nothing else changes.
+
+| Task | Answers |
+| --- | --- |
+| `explanation` | What the current step is asking, in the lesson's own words, plus its mental models |
+| `hint` | The lesson's coaching guidance and its strongest analogy. Never the answer |
+| `socratic-question` | One question drawn from the next mastery-rubric check the learner has not matched |
+| `feedback` | Which rubric points the learner's draft already names, and which it does not |
+| `misconception-check` | The misconceptions the lesson records, with its correctives |
+
+### What this is, and is not
+
+The one shipped provider, `deterministic-los`, is **not an LLM**. It is a set of explicit
+rules over LOS v2 content. There is no model, no API key, no network call, and no external
+dependency; `GET /api/v1/tutor/capabilities` reports `determinism` and `external` so a
+client can say so to the learner. Every response carries a disclaimer and a `citations`
+list naming the Learning Object fields it drew from, and tests assert that the text is
+traceable to those fields.
+
+Its limits are real, and stated rather than hidden:
+
+- It can only quote and rearrange the published lesson. A question outside the lesson's own
+  vocabulary returns `supported: false` and redirects to the objectives; it does not guess.
+- It makes **no adaptive-mastery claim**. Its only use of evidence is choosing which rubric
+  check to ask about next. Rubric feedback is a regex keyword match defined in the content,
+  and the response says in as many words that matching it is not proof of understanding.
+- It has no memory. The same request always produces the same response, byte for byte.
+
+### Evidence and privacy
+
+Tutoring writes **nothing**. ADR-0007 defines no evidence kind for asking for help, and
+rather than inventing one this phase records the interaction nowhere; whether it should
+become governed evidence is open as **A-013** in the assumption register. The learner's
+question or draft is held for the duration of the request, is never persisted, and is never
+logged. Observability is one structured line per request carrying the task, concept,
+provider, support flag, rules fired, and elapsed time — and no learner text. Elapsed time
+is logged but never returned, so the response stays a pure function of its inputs.
 
 ## Erasure
 
@@ -229,5 +278,5 @@ Production scope is exactly one Numbers Learning Object (ADR-0006 acceptance cri
 Phase C added the persistence foundation; Phase D added the learner loop on top of it under
 accepted [ADR-0007](../../docs/governance/adr/ADR-0007-learner-evidence-semantics.md): a
 typed evidence vocabulary, a replayable progress projection, compensating retractions, and
-the privileged erasure route. Tutoring contracts are Phase E and are **not** implemented.
+the privileged erasure route, and the Phase E tutoring layer described below.
 Nothing here depends on the archived Node prototype.
