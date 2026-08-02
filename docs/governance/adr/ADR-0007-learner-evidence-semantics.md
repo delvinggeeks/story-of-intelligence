@@ -1,7 +1,7 @@
 # ADR-0007: Learner evidence semantics, identity, and retention
 
-- **Status:** Proposed — not accepted, not implemented
-- **Date:** ADR-0006 Phase C
+- **Status:** Accepted
+- **Date:** 2026-08-02 (raised during ADR-0006 Phase C, accepted before Phase D)
 - **Supersedes / amends:** Nothing. ADR-0001 (EDM v1.0 frozen) and ADR-0006 (production platform scope) are unchanged.
 
 ## Context
@@ -55,36 +55,129 @@ deletion policy is implied by the code.
 
 ## Decision
 
-**None yet.** This ADR is raised to record that these decisions are outstanding and to block
-Phase D from making them implicitly.
+Seven decisions are accepted. Together they define what an evidence event means, who a learner
+is, and how learner data is erased. Nothing below is implemented yet; this ADR authorises the
+implementation, which lands in Phase D.
 
-## Options to evaluate before acceptance
+### D1. A versioned, closed evidence vocabulary, enforced in the domain layer
 
-1. **Evidence vocabulary.** Closed enum in the domain layer, versioned, with a documented
-   meaning per kind; versus an open string with a registry document. Recommendation to test:
-   closed vocabulary in the domain layer, not in the database, so the migration cost stays low
-   while replay stays analysable.
-2. **Payload governance.** A discriminated Pydantic model per `kind`, validated on write and on
-   read, versus free-form JSONB. Note that events already written cannot be retro-validated.
-3. **Correction semantics.** Because evidence cannot be updated, a mistake must be corrected by
-   appending a compensating event. The shape of that event needs to be decided, not improvised.
-4. **Ordering guarantee.** Phase C already establishes that `evidence_event.sequence` (a
-   database identity column) is the authoritative replay order, because PostgreSQL `now()` is
-   transaction-start time and cannot order events written in one transaction. This ADR should
-   confirm that guarantee as part of the public contract.
-5. **Identity.** Keep anonymous-only, or define a deliberate upgrade path to an account. If
-   anonymous-only is confirmed, the limitations above must be stated in learner-facing terms.
-6. **Retention and erasure.** A retention window, and a defined erasure mechanism that is
-   compatible with the immutability guarantee — for example, deleting a whole learner subtree
-   as a privileged operation rather than mutating individual events.
+`evidence_event.kind` is drawn from a **closed, versioned vocabulary defined in Python**. It is
+**not** a PostgreSQL enum and not a database constraint.
 
-## Consequences if this ADR is not accepted
+The domain layer is the enforcement point because it keeps replay analysable without making
+every new observation a schema migration. A database enum would buy marginal integrity at the
+cost of a migration, a deploy ordering constraint, and a downgrade hazard each time the
+vocabulary grows. The `String(64)` column is retained as storage only.
 
-Phase D cannot derive progress or mastery from evidence, because no evidence has an agreed
-meaning. The Phase C tables remain a correct, inert record: they can store facts, and nothing
-reads them for judgement.
+The vocabulary is versioned so that a kind's meaning can never be silently redefined. A kind
+that must change meaning gets a new name; the retired name stays readable for replay of
+historical events and is rejected for new writes.
+
+Unknown kinds are rejected on write. On read, an unknown or retired kind must remain
+deserialisable, because events already written cannot be retro-validated.
+
+### D2. Payloads validated by a discriminated Pydantic model keyed by kind
+
+`evidence_event.payload` is validated by a **discriminated union of Pydantic models, with `kind`
+as the discriminator**. Each kind has exactly one payload model.
+
+Validation happens on write. A payload that does not match its kind is rejected before it
+reaches the database, so an unschema'd JSONB column can never become an undocumented contract.
+
+On read, validation is best-effort: an event whose payload no longer matches the current model
+must still be retrievable in raw form. Events already written cannot be retro-validated, and a
+read path that raised on historical data would make the record unusable exactly when it matters.
+
+JSONB remains the storage type. The schema lives in code, beside the vocabulary it belongs to.
+
+### D3. Learner identity stays anonymous-only
+
+A learner is a **server-generated UUID with no credential, no personal data, and no cross-device
+linkage**. This confirms the Phase C model as the permanent design, not a placeholder.
+
+Specifically, and permanently for this scope:
+
+- no accounts, no sign-in, no email address, no name;
+- no device fingerprinting and no linking of anonymous IDs;
+- no attempt to determine whether two learner IDs are the same human.
+
+Any future change to this is a new ADR, not an implementation detail. Introducing accounts
+introduces personal data, and that must never happen implicitly.
+
+### D4. Evidence stays append-only; corrections are typed compensating events
+
+Evidence is **never updated**. The `before_flush` guard added in Phase C is confirmed as a
+permanent invariant, not a temporary safety net.
+
+A mistake is corrected by **appending a typed compensating event** that references the event it
+corrects. The compensating event is part of the D1 vocabulary and carries a D2-validated
+payload, so a correction is itself first-class evidence rather than an improvised convention.
+
+This means replay is the only correct way to derive current state: a consumer that reads the
+latest event without applying compensations will be wrong. That cost is accepted in exchange for
+a learning record whose history cannot be silently rewritten.
+
+### D5. `evidence_event.sequence` is the authoritative replay order
+
+The database identity column `evidence_event.sequence` is **confirmed as part of the public
+contract**. It is the only correct ordering for replay.
+
+Timestamps must not be used for ordering. PostgreSQL `now()` is transaction-start time, so
+events written inside one transaction share a `recorded_at` and cannot be ordered by it.
+`occurred_at` is caller-supplied and therefore untrusted. Both remain useful as facts; neither
+is an ordering key.
+
+### D6. Erasure is a privileged learner-subtree delete
+
+A **privileged erasure operation** deletes a learner together with its sessions and its entire
+evidence subtree, as one transaction.
+
+Individual evidence-event deletion is **not permitted** and must remain impossible. Erasure is
+all-or-nothing for a learner, which is what makes it compatible with D4: the append-only
+invariant protects the integrity of a record that exists, and erasure removes the record
+entirely rather than editing it.
+
+The operation is privileged. It is not reachable from ordinary learner-facing request handling
+and is not part of the normal repository surface. It must be auditable, and it is irreversible.
+
+No time-based retention window is set by this ADR. Anonymous evidence carrying no personal data
+creates little retention pressure, and an arbitrary window would delete learning history for no
+stated benefit. A retention window is a separate decision if one is ever needed.
+
+### D7. Learner-facing limitations are stated plainly
+
+The consequences of D3 and D6 are recorded in learner-facing terms, not left implicit in
+architecture documents:
+
+- **Progress is tied to this browser.** Clearing site data starts over as a new learner.
+- **Progress does not follow you.** There is no way to continue on another device or browser.
+- **There is no account to recover.** Nothing identifies a learner, so lost progress cannot be
+  restored by support.
+- **Erasure is complete and permanent.** Erasing a learner removes their sessions and their
+  entire learning history at once; it cannot be undone or partially applied.
+
+These are the honest price of collecting no personal data. Stating them is part of the decision,
+not a follow-up task.
+
+## Consequences
+
+Phase D may now interpret evidence, because evidence has an agreed meaning.
+
+Implementation notes carried into Phase D:
+
+- The Phase C immutability guard rejects **all** deletes of `EvidenceEvent`. D6 requires a
+  deliberate, narrow, auditable bypass for learner-subtree erasure only. Widening that guard
+  casually would silently repeal D4.
+- Phase C configured no ORM cascades, precisely so that no deletion policy was implied before
+  this ADR existed. D6 now supplies that policy, so the erasure path may rely on the existing
+  database-level `ON DELETE CASCADE` from `learner` downward.
+- Evidence written during Phase C predates the D1 vocabulary and the D2 payload models. It must
+  remain readable and must not be retro-validated.
+- `evidence_event.kind` remains `String(64)`. D1 requires no migration.
 
 ## Review trigger
 
-Before the first Phase D change that reads `evidence_event.kind` or `evidence_event.payload`
-for any purpose other than returning them verbatim.
+Re-open this ADR if any of the following becomes true: a requirement appears that cannot be met
+without identifying a learner across devices; a legal or institutional obligation imposes a
+retention window; or the closed vocabulary changes often enough that the migration-cost argument
+for keeping it out of the database no longer holds.
