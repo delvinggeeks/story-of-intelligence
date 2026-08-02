@@ -1,0 +1,102 @@
+name: Verify
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: API (uv / FastAPI)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Hardlinking is unreliable on synced/overlay filesystems; copying is portable.
+      UV_LINK_MODE: copy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Verify lockfile is current
+        run: uv lock --directory services/api --check
+
+      - name: Install dependencies
+        run: uv sync --directory services/api --all-groups --locked
+
+      - name: Lint
+        run: uv run --directory services/api ruff check .
+
+      - name: Format check
+        run: uv run --directory services/api ruff format --check .
+
+      - name: Type check
+        run: uv run --directory services/api mypy
+
+      - name: Test
+        run: uv run --directory services/api pytest
+
+  web:
+    name: Web (Next.js / TypeScript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint:web
+
+      - name: Test
+        run: npm run test:web
+
+      # Typed routes are emitted by the build, so it must run before the standalone type check.
+      - name: Build
+        run: npm run build:web
+
+      - name: Type check
+        run: npm run typecheck:web
+
+  audit:
+    name: Dependency audit (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Reported, never a silent delivery block: an upstream advisory with no released fix
+    # must not stop unrelated changes from shipping. Failures here require a triage note
+    # in docs/governance/evidence-register.md before merge.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit
+        run: npm audit --audit-level=high

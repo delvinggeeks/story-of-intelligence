@@ -1,4 +1,36 @@
+# Dependencies
 node_modules/
+.venv/
+venv/
+
+# Build output
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Test and tooling caches
 playwright-report/
 test-results/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage/
+htmlcov/
+.coverage
+__pycache__/
+*.py[cod]
+
+# Local runtime state (archived prototype file-backed store)
 data/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+.idea/

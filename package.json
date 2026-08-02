@@ -1,0 +1,33 @@
+{
+  "name": "story-of-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Story of Intelligence Academy monorepo",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace @academy/web",
+    "build:web": "npm run build --workspace @academy/web",
+    "lint:web": "npm run lint --workspace @academy/web",
+    "typecheck:web": "npm run typecheck --workspace @academy/web",
+    "test:web": "npm run test --workspace @academy/web",
+    "dev:api": "uv run --directory services/api uvicorn academy_api.main:app --reload --port 8000",
+    "test:api": "uv run --directory services/api pytest",
+    "lint:api": "uv run --directory services/api ruff check .",
+    "typecheck:api": "uv run --directory services/api mypy",
+    "audit:web": "npm audit --audit-level=high",
+    "verify": "npm run lint:api && npm run typecheck:api && npm run test:api && npm run lint:web && npm run test:web && npm run build:web && npm run typecheck:web"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.25",
+      "sharp": "^0.35.3"
+    },
+    "postcss": "^8.5.25",
+    "sharp": "^0.35.3"
+  }
+}
