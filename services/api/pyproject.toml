@@ -1,0 +1,48 @@
+[project]
+name = "academy-api"
+version = "0.1.0"
+description = "Story of Intelligence Academy production API"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.118.0",
+    "uvicorn[standard]>=0.38.0",
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.8.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+    "httpx>=0.28.0",
+    "ruff>=0.9.0",
+    "mypy>=1.15.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+# Hardlinking fails on OneDrive-synced checkouts (os error 396); copying is portable.
+link-mode = "copy"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/academy_api"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["academy_api"]
+mypy_path = "src"
+strict = true

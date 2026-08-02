@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "nodes": [
+    {
+      "id": "numbers",
+      "learningObject": "numbers.v2.json",
+      "prerequisites": [],
+      "relatedConcepts": ["counting", "quantity", "number-line"]
+    }
+  ]
+}

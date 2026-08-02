@@ -1,0 +1,181 @@
+{
+  "id": "numbers",
+  "version": "2.0.0",
+  "title": "Numbers",
+  "scope": "An adult-friendly foundation for understanding how quantities become usable data in mathematics, software, and machine learning.",
+  "stability": "timeless",
+  "beginnerEntry": "No formal mathematics is assumed. You already make quantity judgments in everyday decisions, measurements, and comparisons.",
+  "nextConcept": null,
+  "knowledge": {
+    "conceptId": "numbers",
+    "prerequisites": [],
+    "relatedConcepts": [
+      "counting",
+      "quantity",
+      "number-line"
+    ],
+    "history": "Numbers began as tally marks and Sumerian accounting tokens five thousand years ago — invented not for mathematics but so people could trust records of grain and debts. Positional notation and zero later made large quantities writable, and that same trust problem (what does this figure represent?) is exactly today's data-quality problem.",
+    "mentalModels": [
+      {
+        "name": "Label on a box",
+        "description": "A number is a label describing an amount — it is not the amount itself. The label is only useful when you know what the box contains and how it was measured."
+      },
+      {
+        "name": "Shared ruler",
+        "description": "Two quantities can only be compared when measured with the same ruler. Unit and definition are the ruler; without them, comparison is meaningless."
+      }
+    ],
+    "analogies": [
+      {
+        "analogy": "Comparing prices in different currencies without converting them first",
+        "strength": 5,
+        "whenToUse": "When a learner compares raw digits across mismatched units."
+      },
+      {
+        "analogy": "Two thermometers, one in Celsius and one in Fahrenheit, reading 30 and 40",
+        "strength": 4,
+        "whenToUse": "When showing that the bigger digit is not always the bigger quantity."
+      }
+    ]
+  },
+  "learning": {
+    "objectives": [
+      "Explain that a number is a representation of quantity, not the quantity itself.",
+      "Identify the unit and context needed before any quantity comparison is meaningful.",
+      "Predict failure modes when units or definitions are inconsistent across data sources.",
+      "Apply quantity reasoning to everyday decisions and machine-learning data interpretation."
+    ],
+    "estimatedMinutes": 50,
+    "steps": [
+      {
+        "kind": "observe",
+        "prompt": "A dashboard reports 42 support tickets today and 57 yesterday. Before calculating anything, what does each number let you understand?"
+      },
+      {
+        "kind": "wonder",
+        "prompt": "Why is a number more useful than the phrase 'many tickets'? What information becomes comparable once both values share a unit?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Predict what fails if one report uses 'tickets' and another uses an undefined label such as 'high volume'."
+      },
+      {
+        "kind": "experiment",
+        "experimentId": "numbers-unit-compare",
+        "prompt": "Play the experiment above: compare the two revenue figures as raw digits first, then normalize the units. Which table actually earned more, and what changed your answer?"
+      },
+      {
+        "kind": "fail",
+        "prompt": "Now break it on purpose: imagine a report that averages Table A's millions with Table B's thousands without converting. Write down the nonsense figure it would produce and who would be misled by it."
+      },
+      {
+        "kind": "discover",
+        "prompt": "State the rule you just discovered in your own words: what must two numbers share before comparing, adding, or averaging them is valid? This rule is why schemas and metadata exist."
+      },
+      {
+        "kind": "explain",
+        "prompt": "A number represents quantity in a defined context. Without a shared unit and definition, the number is hard to compare, hard to store correctly, and unsafe to use for decisions."
+      },
+      {
+        "kind": "apply",
+        "prompt": "You have 12 apples, 9 oranges, and 15 tasks. Which comparisons are valid and which are invalid? Explain your reasoning using quantity and unit."
+      },
+      {
+        "kind": "observe",
+        "prompt": "A recipe says 2 cups of water; a nutrition label says 200 calories; a travel app says 8 km. What is common across all three numbers, and what is different?"
+      },
+      {
+        "kind": "wonder",
+        "prompt": "Can two numbers be compared directly when they describe different units such as cups, calories, and kilometers? Why or why not?"
+      },
+      {
+        "kind": "predict",
+        "prompt": "Predict the business risk if one data table stores revenue in dollars and another in thousands of dollars without marking that difference."
+      },
+      {
+        "kind": "explain",
+        "prompt": "Numbers become reliable data only when quantity, unit, and meaning are explicit. This is why schema, column definitions, and metadata are critical in analytics and machine learning."
+      },
+      {
+        "kind": "apply",
+        "prompt": "A model dataset has columns for age (years), income (USD), and session duration (minutes). Explain what each number means, where confusion could occur, and one check to prevent misuse."
+      }
+    ],
+    "experiments": [
+      {
+        "id": "numbers-unit-compare",
+        "type": "unit-compare",
+        "title": "The bigger number that is actually smaller",
+        "instructions": "Two revenue figures from two tables. Compare them as raw digits, then press the button to convert both to the same unit — and watch the comparison flip.",
+        "config": {
+          "a": {
+            "label": "Table A revenue",
+            "value": 1.2,
+            "unit": "millions USD",
+            "factor": 1000000
+          },
+          "b": {
+            "label": "Table B revenue",
+            "value": 900,
+            "unit": "thousands USD",
+            "factor": 1000
+          }
+        }
+      }
+    ]
+  },
+  "measurement": {
+    "prePrompt": "Before the lesson: Explain how you decide whether one metric is larger than another, and list what must be shared for the comparison to be valid.",
+    "postPrompt": "After the lesson: A pipeline reports 1,200 records in table A and 800 in table B. Explain what each number represents, compare them correctly, identify one possible misuse, and describe one guardrail.",
+    "successCriteria": [
+      "Learner states that a number represents quantity and distinguishes representation from the thing measured.",
+      "Learner identifies unit/context requirements before comparing values.",
+      "Learner performs a valid comparison and rejects at least one invalid comparison.",
+      "Learner names at least one failure mode from missing or inconsistent units.",
+      "Learner connects the result to a practical decision, data-quality check, or computational use."
+    ],
+    "masteryRubric": {
+      "threshold": 3,
+      "checks": [
+        {
+          "id": "quantity",
+          "label": "Name the quantity being represented.",
+          "pattern": "(quantity|count|records?|tickets?|examples?|value)"
+        },
+        {
+          "id": "unit",
+          "label": "State the unit or measurement context.",
+          "pattern": "(unit|schema|years?|minutes?|usd|dollars?|km|calories|cups)"
+        },
+        {
+          "id": "comparison",
+          "label": "Make a valid comparison with shared meaning.",
+          "pattern": "(compare|larger|smaller|more|less|same|equal)"
+        },
+        {
+          "id": "risk",
+          "label": "Identify at least one misuse or failure mode.",
+          "pattern": "(risk|wrong|misuse|fail|invalid|confus|error|unsafe)"
+        },
+        {
+          "id": "decision",
+          "label": "Connect the result to a decision or guardrail.",
+          "pattern": "(decision|action|check|guardrail|validate|use|choose)"
+        }
+      ]
+    }
+  },
+  "reasoning": {
+    "misconceptions": [
+      "A number is the thing being measured rather than a representation of quantity.",
+      "Any two numbers can be compared directly even when their units differ.",
+      "A larger number is always better regardless of context or objective.",
+      "If values are in a table, their meaning is automatically trustworthy without metadata."
+    ],
+    "tutorGuidance": "Coach with three prompts: (1) What quantity is represented? (2) What is the unit/context? (3) What decision depends on this comparison? If confusion remains, use a daily-life example first, then map back to data columns and model inputs."
+  },
+  "provenance": {
+    "source": "Production seed for the ADR-0006 Numbers vertical slice, migrated from the Node prototype LOS v2.0 object.",
+    "status": "validated"
+  }
+}
