@@ -13,6 +13,7 @@ build/
 # Test and tooling caches
 playwright-report/
 test-results/
+e2e-logs/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
