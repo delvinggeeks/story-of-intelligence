@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+# Every `uses:` below is pinned to an immutable commit SHA rather than a tag, because a
+# tag can be moved to point at new code. The trailing comment records which release the
+# SHA is, since the SHA alone is unreadable; bumping one means changing both.
+
 jobs:
   api:
     name: API (uv / FastAPI)
@@ -20,7 +24,7 @@ jobs:
       UV_LINK_MODE: copy
       # Runner-local throwaway service containers. No hosted database, no real credentials.
       ACADEMY_DATABASE_URL: postgresql+asyncpg://academy:academy_local_dev@127.0.0.1:5432/academy
-      # Exercise the disabled-cache path in CI; degradation must never fail the suite.
+      # Exercise the disabled-cache path here; the e2e job runs the cache-enabled one.
       ACADEMY_REDIS_URL: ""
     services:
       postgres:
@@ -38,10 +42,10 @@ jobs:
           --health-retries 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
 
@@ -82,14 +86,16 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "24"
           cache: "npm"
 
+      # `npm ci` refuses to run when package.json and package-lock.json disagree, so this
+      # doubles as the lockfile-integrity check.
       - name: Install dependencies
         run: npm ci
 
@@ -114,9 +120,14 @@ jobs:
       UV_LINK_MODE: copy
       NEXT_TELEMETRY_DISABLED: "1"
       ACADEMY_DATABASE_URL: postgresql+asyncpg://academy:academy_local_dev@127.0.0.1:5432/academy
-      ACADEMY_REDIS_URL: ""
+      # The full production shape, cache included, unlike the api job's degraded path.
+      ACADEMY_REDIS_URL: redis://127.0.0.1:6379/0
+      NEXT_PUBLIC_ACADEMY_API_URL: http://127.0.0.1:8000
+      ACADEMY_API_URL: http://127.0.0.1:8000
       # Playwright starts and stops the API and the production web server itself.
       ACADEMY_E2E_MANAGE_SERVERS: "1"
+    # The runner creates and destroys these around the job, so every backing service this
+    # job depends on is its own and outlives nothing.
     services:
       postgres:
         image: postgres:17-alpine
@@ -131,17 +142,26 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           enable-cache: true
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "24"
           cache: "npm"
@@ -165,13 +185,18 @@ jobs:
       - name: End-to-end
         run: npm run test:e2e
 
-      - name: Upload traces
+      # Traces, screenshots, and videos are only written for failed tests; the server
+      # logs are always written but are only worth keeping when there is a failure.
+      - name: Upload failure artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: playwright-traces
-          path: apps/web/test-results
+          name: playwright-failure-artifacts
+          path: |
+            apps/web/test-results
+            apps/web/e2e-logs
           retention-days: 7
+          if-no-files-found: ignore
 
   audit:
     name: Dependency audit (advisory)
@@ -183,10 +208,10 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "24"
           cache: "npm"
@@ -194,5 +219,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Mirrored into the job summary so an advisory is visible without opening the log.
       - name: Audit
-        run: npm audit --audit-level=high
+        run: |
+          set +e
+          npm audit --audit-level=high | tee audit.txt
+          status=${PIPESTATUS[0]}
+          {
+            echo '## npm audit (advisory)'
+            echo ''
+            echo '```'
+            cat audit.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
